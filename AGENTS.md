@@ -17,6 +17,7 @@ Before implementing a stage, read:
 
 - Work on one stage at a time.
 - Do not implement future-stage features unless explicitly requested.
+- On Windows, prefer PowerShell 7 (`pwsh`) for project commands when available.
 - Keep changes scoped to the active stage.
 - Prefer clear interfaces and types before implementation.
 - Keep `main` buildable.
@@ -48,4 +49,3 @@ Before implementing a stage, read:
 - Never automatically modify user notes without confirmation.
 - Do not introduce large dependencies without explaining why they are needed.
 - Prefer the existing implementation plan over ad hoc architecture changes.
-

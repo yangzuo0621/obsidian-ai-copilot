@@ -1,0 +1,27 @@
+{
+  "name": "obsidian-ai-copilot",
+  "version": "0.0.1",
+  "description": "AI copilot for Obsidian notes.",
+  "main": "main.js",
+  "scripts": {
+    "build": "npm run typecheck && node esbuild.config.mjs production",
+    "deploy:test": "npm run build && node scripts/deploy-test-plugin.mjs",
+    "typecheck": "tsc --noEmit",
+    "dev": "node esbuild.config.mjs"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "ai",
+    "copilot"
+  ],
+  "author": "yangzuo0621",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "builtin-modules": "^5.3.0",
+    "esbuild": "^0.28.1",
+    "obsidian": "^1.13.1",
+    "typescript": "^6.0.3"
+  }
+}

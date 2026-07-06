@@ -7,6 +7,9 @@ node_modules/
 dist/
 main.js
 
+# Local environment
+.env.local
+
 # Logs
 *.log
 npm-debug.log*

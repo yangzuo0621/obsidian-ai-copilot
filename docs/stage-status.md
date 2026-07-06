@@ -7,11 +7,11 @@ Future stages are planning placeholders. They may be revised before implementati
 ## Current Stage
 
 Current stage: 0
-Current status: not_started
+Current status: completed
 
 ## Stage Checklist
 
-- [ ] Stage 0: Project scaffold
+- [x] Stage 0: Project scaffold
 - [ ] Stage 1: Settings and provider abstraction
 - [ ] Stage 2: Copilot sidebar and basic chat
 - [ ] Stage 3: Streaming and abort
@@ -24,7 +24,7 @@ Current status: not_started
 
 ## Stage 0: Project Scaffold
 
-Status: not_started
+Status: completed
 
 ### Goal
 
@@ -75,6 +75,8 @@ Create the minimum Obsidian plugin project skeleton that can build and be loaded
 
 ```txt
 npm run build
+npm run deploy:test
+npm run deploy:test -- <test-vault>/.obsidian/plugins
 git status --short --branch
 ```
 
@@ -86,11 +88,40 @@ The test command appears in the command palette.
 Running the test command shows a Notice.
 ```
 
+Manual smoke test steps:
+
+```txt
+1. Run `npm run deploy:test`.
+2. Restart or reload Obsidian.
+3. Open Settings -> Community plugins.
+4. Enable `Obsidian AI Copilot`.
+5. Open the command palette and run `Show load notice`.
+6. Confirm a Notice appears.
+```
+
+Local configuration:
+
+```txt
+Create `.env.local` with:
+OBSIDIAN_PLUGINS_DIR=<test-vault>/.obsidian/plugins
+```
+
+Override example:
+
+```powershell
+npm run deploy:test -- "<test-vault>/.obsidian/plugins"
+```
+
 ### Notes
 
 - Use a conservative plugin id, likely `obsidian-ai-copilot`.
 - Avoid introducing UI frameworks at this stage.
 - Avoid implementing any AI provider code in this stage.
+- Stage 0 uses the standard Obsidian plugin skeleton with npm, esbuild, and TypeScript.
+- Code style baseline: strict TypeScript, small modules, no UI framework, sparse comments.
+- Automated verification should run before review: `npm install`, `npm run build`, `npm run deploy:test`, and `git status --short --branch`.
+- Manual Obsidian smoke test passed on 2026-07-06.
+- Review passed on 2026-07-06.
 
 ## Stage 1: Settings and Provider Abstraction
 
@@ -241,4 +272,3 @@ Allow the assistant to call controlled Obsidian tools.
 - Read/search tools.
 - Confirmed note-writing tools.
 - Agent runner.
-

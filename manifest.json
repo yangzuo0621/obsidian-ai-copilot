@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-ai-copilot",
+  "name": "Obsidian AI Copilot",
+  "version": "0.0.1",
+  "minAppVersion": "1.5.0",
+  "description": "AI copilot for Obsidian notes.",
+  "author": "yangzuo0621",
+  "authorUrl": "https://github.com/yangzuo0621",
+  "isDesktopOnly": false
+}
