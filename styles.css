@@ -1,3 +1,116 @@
-/*
- * Stage 0 intentionally has no UI styles yet.
- */
+.obsidian-ai-copilot-view {
+  height: 100%;
+}
+
+.obsidian-ai-copilot-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.obsidian-ai-copilot-header {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 12px;
+}
+
+.obsidian-ai-copilot-heading {
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+}
+
+.obsidian-ai-copilot-session-title {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-ai-copilot-messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.obsidian-ai-copilot-empty {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  flex: 1;
+  font-size: var(--font-ui-small);
+  justify-content: center;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.obsidian-ai-copilot-message {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.obsidian-ai-copilot-message-user {
+  background: var(--background-primary-alt);
+}
+
+.obsidian-ai-copilot-message-assistant {
+  background: var(--background-secondary);
+}
+
+.obsidian-ai-copilot-message-meta {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: var(--font-ui-smaller);
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.obsidian-ai-copilot-status {
+  color: var(--text-accent);
+}
+
+.obsidian-ai-copilot-status-error {
+  color: var(--text-error);
+}
+
+.obsidian-ai-copilot-message-content {
+  color: var(--text-normal);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.obsidian-ai-copilot-message-error {
+  color: var(--text-error);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.obsidian-ai-copilot-composer {
+  border-top: 1px solid var(--background-modifier-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.obsidian-ai-copilot-input {
+  min-height: 72px;
+  resize: vertical;
+  width: 100%;
+}
+
+.obsidian-ai-copilot-send {
+  align-self: flex-end;
+}
