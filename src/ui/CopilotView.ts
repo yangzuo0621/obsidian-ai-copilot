@@ -11,6 +11,7 @@ export class CopilotView extends ItemView {
   private messageListEl!: HTMLElement;
   private textareaEl!: HTMLTextAreaElement;
   private sendButtonEl!: HTMLButtonElement;
+  private stopButtonEl!: HTMLButtonElement;
   private unsubscribe: (() => void) | null = null;
   private currentState: ChatState | null = null;
 
@@ -83,9 +84,17 @@ export class CopilotView extends ItemView {
       cls: "mod-cta obsidian-ai-copilot-send",
       text: "Send",
     });
+    this.stopButtonEl = composerEl.createEl("button", {
+      cls: "obsidian-ai-copilot-stop",
+      text: "Stop",
+    });
 
     this.registerDomEvent(this.sendButtonEl, "click", () => {
       void this.submitMessage();
+    });
+
+    this.registerDomEvent(this.stopButtonEl, "click", () => {
+      this.chatService.stopGeneration();
     });
 
     this.registerDomEvent(this.textareaEl, "keydown", (event: KeyboardEvent) => {
@@ -107,7 +116,7 @@ export class CopilotView extends ItemView {
     if (state.session.messages.length === 0) {
       this.messageListEl.createDiv({
         cls: "obsidian-ai-copilot-empty",
-        text: "Start a chat from here. Stage 2 sends plain text only; note context and streaming come later.",
+        text: "Start a chat from here. Responses stream in as they are generated.",
       });
     } else {
       for (const message of state.session.messages) {
@@ -129,13 +138,17 @@ export class CopilotView extends ItemView {
 
     if (message.status === "pending") {
       metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Pending" });
+    } else if (message.status === "streaming") {
+      metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Streaming" });
+    } else if (message.status === "aborted") {
+      metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Stopped" });
     } else if (message.status === "error") {
       metaEl.createSpan({ cls: "obsidian-ai-copilot-status obsidian-ai-copilot-status-error", text: "Error" });
     }
 
     messageEl.createDiv({
       cls: "obsidian-ai-copilot-message-content",
-      text: message.content,
+      text: message.content || (message.status === "streaming" ? "..." : ""),
     });
 
     if (message.error) {
@@ -171,5 +184,7 @@ export class CopilotView extends ItemView {
     this.textareaEl.disabled = isSending;
     this.sendButtonEl.disabled = isSending || !hasInput;
     this.sendButtonEl.setText(isSending ? "Sending..." : "Send");
+    this.stopButtonEl.disabled = !isSending;
+    this.stopButtonEl.toggleClass("is-hidden", !isSending);
   }
 }

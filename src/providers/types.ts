@@ -16,8 +16,15 @@ export interface CompletionResult {
   raw: unknown;
 }
 
+export interface StreamCallbacks {
+  onToken(token: string): void;
+  onDone(): void;
+  onError(error: unknown): void;
+}
+
 export interface LLMProvider {
   id: string;
   label: string;
   complete(request: CompletionRequest): Promise<CompletionResult>;
+  stream(request: CompletionRequest, callbacks: StreamCallbacks, signal?: AbortSignal): Promise<void>;
 }
