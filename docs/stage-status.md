@@ -6,13 +6,13 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 0
+Current stage: 1
 Current status: completed
 
 ## Stage Checklist
 
 - [x] Stage 0: Project scaffold
-- [ ] Stage 1: Settings and provider abstraction
+- [x] Stage 1: Settings and provider abstraction
 - [ ] Stage 2: Copilot sidebar and basic chat
 - [ ] Stage 3: Streaming and abort
 - [ ] Stage 4: Current note and selection context
@@ -125,13 +125,13 @@ npm run deploy:test -- "<test-vault>/.obsidian/plugins"
 
 ## Stage 1: Settings and Provider Abstraction
 
-Status: planned
+Status: completed
 
 ### Goal
 
 Add plugin settings and the first model provider abstraction.
 
-### Summary Scope
+### Scope
 
 - Settings types and defaults.
 - Settings tab.
@@ -139,11 +139,55 @@ Add plugin settings and the first model provider abstraction.
 - OpenAI-compatible provider with non-streaming request.
 - Provider test command.
 
-### Summary Out of Scope
+### Out of Scope
 
 - No chat sidebar.
 - No streaming.
 - No context builder.
+
+### Files
+
+- `src/main.ts`
+- `src/settings/types.ts`
+- `src/settings/defaults.ts`
+- `src/settings/SettingsTab.ts`
+- `src/providers/types.ts`
+- `src/providers/OpenAICompatibleProvider.ts`
+- `src/providers/ProviderRegistry.ts`
+- `docs/stage-status.md`
+
+### Completion Criteria
+
+- Plugin data stores provider settings through Obsidian's `loadData()` and `saveData()`.
+- Settings tab allows editing API key, base URL, model, temperature, and context token budget.
+- Provider logic is behind `LLMProvider` and does not depend on Obsidian APIs.
+- OpenAI-compatible provider can send a non-streaming chat completions request.
+- Command palette includes `Ask Copilot: Test Provider`.
+
+### Verification
+
+```txt
+npm run typecheck
+npm run build
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian shows the plugin settings tab.
+Settings can be edited and persist after closing settings.
+Running `Ask Copilot: Test Provider` sends one non-streaming provider request.
+The command shows a success or failure Notice.
+```
+
+### Notes
+
+- Stage 1 intentionally uses `fetch` instead of a provider SDK to avoid a large dependency.
+- API keys are never hardcoded and are only stored in Obsidian plugin data.
+- The context token budget is stored for future stages but no note context is injected yet.
+- Streaming remains deferred to Stage 3.
 
 ## Stage 2: Copilot Sidebar and Basic Chat
 
