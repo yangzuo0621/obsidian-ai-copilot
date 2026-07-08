@@ -69,7 +69,7 @@ export class CopilotSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Context token budget")
-      .setDesc("Reserved for later context features. Stage 1 stores the setting but does not inject note context.")
+      .setDesc("Maximum estimated tokens to reserve for current note or selection context.")
       .addText((text) => {
         text
           .setPlaceholder("4000")
@@ -80,6 +80,30 @@ export class CopilotSettingsTab extends PluginSettingTab {
               this.plugin.copilotSettings.contextTokenBudget = parsed;
               await this.plugin.saveSettings();
             }
+          });
+      });
+
+    new Setting(containerEl)
+      .setName("Include selection")
+      .setDesc("When text is selected in the active note, include it as the highest-priority context.")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.copilotSettings.includeSelection)
+          .onChange(async (value) => {
+            this.plugin.copilotSettings.includeSelection = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(containerEl)
+      .setName("Include current file")
+      .setDesc("When there is no selection, include the active note as context.")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.copilotSettings.includeCurrentFile)
+          .onChange(async (value) => {
+            this.plugin.copilotSettings.includeCurrentFile = value;
+            await this.plugin.saveSettings();
           });
       });
   }

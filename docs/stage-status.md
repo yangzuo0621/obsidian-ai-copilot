@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 3
+Current stage: 4
 Current status: completed
 
 ## Project Verification
@@ -36,7 +36,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 1: Settings and provider abstraction
 - [x] Stage 2: Copilot sidebar and basic chat
 - [x] Stage 3: Streaming and abort
-- [ ] Stage 4: Current note and selection context
+- [x] Stage 4: Current note and selection context
 - [ ] Stage 5: Editing commands
 - [ ] Stage 6: Chat history persistence
 - [ ] Stage 7: Vault search context
@@ -363,7 +363,7 @@ Provider streaming failures render as an error message in the sidebar and show a
 
 ## Stage 4: Current Note and Selection Context
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -378,6 +378,73 @@ Inject structured context from the current Obsidian editor.
 - Context budget.
 - Prompt composer.
 - Context preview.
+
+### Files
+
+- `src/obsidian/WorkspaceAdapter.ts`
+- `src/obsidian/EditorAdapter.ts`
+- `src/obsidian/VaultAdapter.ts`
+- `src/obsidian/CurrentFileAdapter.ts`
+- `src/context/types.ts`
+- `src/context/tokenEstimate.ts`
+- `src/context/SelectionContext.ts`
+- `src/context/CurrentFileContext.ts`
+- `src/context/ContextBuilder.ts`
+- `src/context/ContextBudget.ts`
+- `src/prompts/PromptComposer.ts`
+- `src/prompts/systemPrompts.ts`
+- `src/chat/ChatService.ts`
+- `src/chat/types.ts`
+- `src/ui/CopilotView.ts`
+- `src/settings/types.ts`
+- `src/settings/defaults.ts`
+- `src/settings/SettingsTab.ts`
+- `styles.css`
+- `docs/stage-status.md`
+
+### Completion Criteria
+
+- Current editor selection is collected as the highest-priority structured context when present.
+- Current file content is collected as structured context when there is no selection.
+- Context blocks pass through the configured context token budget before prompt composition.
+- Provider requests are composed by `PromptComposer` instead of ad hoc provider message assembly.
+- The Copilot sidebar shows a context preview for the context attached to the latest request.
+- Context behavior is covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat`.
+Selecting text in the active Markdown editor shows Selection in the context preview after sending a chat message.
+Sending a chat message without selected text shows Current file in the context preview when an active note is open.
+The assistant response streams normally and Stop still cancels the active request.
+Disabling selection or current file context in settings prevents that context type from being attached.
+```
+
+### Notes
+
+- Stage 4 remains read-only. It does not add editing commands or write note content.
+- Selection context takes precedence over current file context.
+- Selection context records one-based editor line ranges and shows them in the context preview.
+- Current file context uses active Markdown view data when available so unsaved editor content can be included.
+- Selection context reads Obsidian `workspace.activeEditor` before falling back to the active or most recent Markdown view, so sidebar focus does not discard the editor selection.
+- Automated verification passed on 2026-07-08.
+- Local test vault deployment passed on 2026-07-08.
 
 ## Stage 5: Editing Commands
 

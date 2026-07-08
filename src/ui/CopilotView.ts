@@ -3,12 +3,14 @@ import type { WorkspaceLeaf } from "obsidian";
 
 import type { ChatService } from "../chat/ChatService";
 import type { ChatMessageRecord, ChatState } from "../chat/types";
+import type { ContextBlockSummary } from "../context/types";
 
 export const COPILOT_VIEW_TYPE = "obsidian-ai-copilot-view";
 
 export class CopilotView extends ItemView {
   private rootEl!: HTMLElement;
   private titleEl!: HTMLElement;
+  private contextPreviewEl!: HTMLElement;
   private messageListEl!: HTMLElement;
   private textareaEl!: HTMLTextAreaElement;
   private sendButtonEl!: HTMLButtonElement;
@@ -70,6 +72,7 @@ export class CopilotView extends ItemView {
     const headerEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-header" });
     headerEl.createDiv({ cls: "obsidian-ai-copilot-heading", text: "AI Copilot" });
     this.titleEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-title" });
+    this.contextPreviewEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-context-preview" });
 
     this.messageListEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-messages" });
 
@@ -112,6 +115,7 @@ export class CopilotView extends ItemView {
 
   private render(state: ChatState): void {
     this.titleEl.setText(state.session.title);
+    this.renderContextPreview(state.contextBlocks);
     this.messageListEl.empty();
 
     if (state.session.messages.length === 0) {
@@ -127,6 +131,61 @@ export class CopilotView extends ItemView {
 
     this.updateComposerState();
     this.messageListEl.scrollTop = this.messageListEl.scrollHeight;
+  }
+
+  private renderContextPreview(contextBlocks: ContextBlockSummary[]): void {
+    this.contextPreviewEl.empty();
+
+    if (contextBlocks.length === 0) {
+      this.contextPreviewEl.createDiv({
+        cls: "obsidian-ai-copilot-context-empty",
+        text: "No note context attached.",
+      });
+      return;
+    }
+
+    this.contextPreviewEl.createDiv({
+      cls: "obsidian-ai-copilot-context-label",
+      text: "Context used",
+    });
+
+    const listEl = this.contextPreviewEl.createDiv({ cls: "obsidian-ai-copilot-context-list" });
+    for (const block of contextBlocks) {
+      this.renderContextBlock(listEl, block);
+    }
+  }
+
+  private renderContextBlock(parentEl: HTMLElement, block: ContextBlockSummary): void {
+    const blockEl = parentEl.createDiv({ cls: "obsidian-ai-copilot-context-block" });
+    blockEl.createSpan({
+      cls: "obsidian-ai-copilot-context-type",
+      text: block.type === "selection" ? "Selection" : "Current file",
+    });
+    blockEl.createSpan({
+      cls: "obsidian-ai-copilot-context-title",
+      text: block.sourcePath ?? block.title,
+    });
+    const lineLabel = this.formatContextLineLabel(block);
+    if (lineLabel) {
+      blockEl.createSpan({
+        cls: "obsidian-ai-copilot-context-lines",
+        text: lineLabel,
+      });
+    }
+    blockEl.createSpan({
+      cls: "obsidian-ai-copilot-context-tokens",
+      text: `~${block.tokenEstimate} tokens`,
+    });
+  }
+
+  private formatContextLineLabel(block: ContextBlockSummary): string | null {
+    if (!block.lineStart || !block.lineEnd) {
+      return null;
+    }
+
+    return block.lineStart === block.lineEnd
+      ? `Line ${block.lineStart}`
+      : `Lines ${block.lineStart}-${block.lineEnd}`;
   }
 
   private renderMessage(message: ChatMessageRecord): void {

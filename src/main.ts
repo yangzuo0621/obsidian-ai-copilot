@@ -2,6 +2,13 @@ import { Notice, Plugin } from "obsidian";
 import type { WorkspaceLeaf } from "obsidian";
 
 import { ChatService } from "./chat/ChatService";
+import { ContextBuilder } from "./context/ContextBuilder";
+import { CurrentFileContext } from "./context/CurrentFileContext";
+import { SelectionContext } from "./context/SelectionContext";
+import { CurrentFileAdapter } from "./obsidian/CurrentFileAdapter";
+import { EditorAdapter } from "./obsidian/EditorAdapter";
+import { VaultAdapter } from "./obsidian/VaultAdapter";
+import { WorkspaceAdapter } from "./obsidian/WorkspaceAdapter";
 import { createProvider } from "./providers/ProviderRegistry";
 import { normalizeSettings } from "./settings/defaults";
 import { CopilotSettingsTab } from "./settings/SettingsTab";
@@ -14,7 +21,15 @@ export default class ObsidianAICopilotPlugin extends Plugin {
 
   override async onload(): Promise<void> {
     await this.loadSettings();
-    this.chatService = new ChatService(() => this.copilotSettings);
+    const workspaceAdapter = new WorkspaceAdapter(this.app);
+    const editorAdapter = new EditorAdapter(workspaceAdapter);
+    const vaultAdapter = new VaultAdapter(this.app);
+    const currentFileAdapter = new CurrentFileAdapter(workspaceAdapter, vaultAdapter);
+    const contextBuilder = new ContextBuilder({
+      selection: new SelectionContext(editorAdapter, editorAdapter),
+      currentFile: new CurrentFileContext(currentFileAdapter),
+    });
+    this.chatService = new ChatService(() => this.copilotSettings, contextBuilder);
 
     this.registerView(
       COPILOT_VIEW_TYPE,
@@ -90,22 +105,8 @@ export default class ObsidianAICopilotPlugin extends Plugin {
   }
 
   private async activateCopilotView(): Promise<void> {
-    const existingLeaves = this.app.workspace.getLeavesOfType(COPILOT_VIEW_TYPE);
-    let leaf: WorkspaceLeaf | null = existingLeaves[0] ?? null;
-
-    if (!leaf) {
-      leaf = this.app.workspace.getRightLeaf(false);
-      if (!leaf) {
-        throw new Error("Unable to create Copilot sidebar leaf.");
-      }
-
-      await leaf.setViewState({
-        type: COPILOT_VIEW_TYPE,
-        active: true,
-      });
-    }
-
-    this.app.workspace.revealLeaf(leaf);
+    const workspaceAdapter = new WorkspaceAdapter(this.app);
+    await workspaceAdapter.revealOrCreateView(COPILOT_VIEW_TYPE);
   }
 
   private async openCopilotViewWithNotice(): Promise<void> {

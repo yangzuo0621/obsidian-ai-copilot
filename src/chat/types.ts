@@ -1,4 +1,5 @@
 import type { ChatMessage } from "../providers/types";
+import type { ContextBlockSummary } from "../context/types";
 
 export type ChatMessageRole = ChatMessage["role"];
 
@@ -11,6 +12,7 @@ export interface ChatMessageRecord {
   createdAt: number;
   status: ChatMessageStatus;
   error?: string;
+  contextBlocks?: ContextBlockSummary[];
 }
 
 export interface ChatSession {
@@ -24,4 +26,5 @@ export interface ChatSession {
 export interface ChatState {
   session: ChatSession;
   isSending: boolean;
+  contextBlocks: ContextBlockSummary[];
 }
