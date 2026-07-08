@@ -68,6 +68,7 @@ If a command cannot run because dependencies or project files do not exist yet, 
 - Pull requests must pass the GitHub Actions verification workflow before merge.
 - `main` should remain buildable at all times.
 - CI runs automated verification only; local Obsidian smoke tests remain manual.
+- PR titles must follow the Pull Request Title Rules in `AGENTS.md`.
 - Do not push branches, create PRs, or merge unless the user explicitly asks.
 
 ## Commit Policy

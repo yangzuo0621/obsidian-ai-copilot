@@ -47,6 +47,32 @@ Before implementing a stage, read:
 - Do not commit `.agents/`, `work/`, secrets, API keys, or local machine state.
 - Check `git status --short --branch` before and after edits.
 
+## Pull Request Title Rules
+
+PR titles must follow Conventional Commits:
+
+```txt
+<type>(<scope>): <imperative summary>
+```
+
+Examples:
+
+```txt
+feat(stage-2): add copilot sidebar chat
+fix(chat): initialize copilot view reliably
+docs(stage-2): update stage status
+chore(ci): add verification workflow
+```
+
+Rules:
+
+- Use `feat`, `fix`, `docs`, `test`, `refactor`, or `chore`.
+- Use `stage-N` as the scope for stage work.
+- Use a short imperative summary.
+- Use lowercase summary text.
+- Do not end with a period.
+- Avoid titles like `Stage 2: ...`; prefer `feat(stage-2): ...`.
+
 ## Safety
 
 - Never hardcode API keys.
