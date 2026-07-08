@@ -1,4 +1,5 @@
-import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
 
 import type { ChatService } from "../chat/ChatService";
 import type { ChatMessageRecord, ChatState } from "../chat/types";

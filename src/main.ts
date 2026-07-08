@@ -1,4 +1,5 @@
-import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
 
 import { ChatService } from "./chat/ChatService";
 import { createProvider } from "./providers/ProviderRegistry";

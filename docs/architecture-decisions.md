@@ -109,7 +109,7 @@ The project is intentionally stage-based and should keep `main` buildable. A sha
 - Stage work should use `codex/` branches unless another branch name is requested.
 - Pull requests are the default path for merging to `main`.
 - CI runs automated verification and does not run local vault deployment commands.
-- Future quality tools such as ESLint should be added to `npm run verify` only after their initial baseline is stable.
+- Future quality tools should be added to `npm run verify` only after their initial baseline is stable.
 
 ## ADR-007: Use Vitest for Unit Test Automation
 
@@ -129,3 +129,22 @@ Stage 2 introduced chat orchestration and provider request flow. These behaviors
 - `npm run verify` runs build checks and unit tests.
 - New complex pure logic should include focused tests.
 - Obsidian UI and manual vault smoke tests remain separate from Vitest until a reliable integration strategy is needed.
+
+## ADR-008: Use ESLint for Static Code Quality Checks
+
+Status: Accepted
+
+### Decision
+
+The project will use ESLint with the TypeScript ESLint recommended rules as a static quality gate. Linting is part of `npm run verify`.
+
+### Reason
+
+Stage 3 introduced more asynchronous and cross-module behavior around streaming and abort handling. TypeScript catches type errors, but ESLint can catch unused code, unsafe patterns, and import hygiene issues earlier in review.
+
+### Consequences
+
+- `npm run lint` runs ESLint over the repository.
+- `npm run verify` runs lint, build, and unit tests.
+- The initial rule set stays conservative and focuses on correctness and type-import hygiene.
+- More opinionated style rules should be introduced separately, after the codebase has a clean baseline.
