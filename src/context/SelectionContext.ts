@@ -3,6 +3,12 @@ import { estimateTokens } from "./tokenEstimate";
 
 export interface SelectionReader {
   getSelection(): string | null;
+  getSelectionLineRange(): SelectionLineRange | null;
+}
+
+export interface SelectionLineRange {
+  lineStart: number;
+  lineEnd: number;
 }
 
 export interface ActiveFileReader {
@@ -22,6 +28,7 @@ export class SelectionContext implements ContextSource {
     }
 
     const sourcePath = this.activeFileReader.getActiveFilePath() ?? undefined;
+    const lineRange = this.selectionReader.getSelectionLineRange();
 
     return {
       id: "selection",
@@ -31,6 +38,8 @@ export class SelectionContext implements ContextSource {
       priority: 100,
       tokenEstimate: estimateTokens(selection),
       sourcePath,
+      lineStart: lineRange?.lineStart,
+      lineEnd: lineRange?.lineEnd,
     };
   }
 }

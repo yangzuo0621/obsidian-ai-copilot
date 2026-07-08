@@ -74,6 +74,11 @@
   white-space: nowrap;
 }
 
+.obsidian-ai-copilot-context-lines {
+  color: var(--text-accent);
+  flex: 0 0 auto;
+}
+
 .obsidian-ai-copilot-context-tokens {
   color: var(--text-faint);
   flex: 0 0 auto;

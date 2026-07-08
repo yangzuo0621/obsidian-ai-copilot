@@ -105,6 +105,8 @@ describe("ChatService", () => {
           priority: 100,
           tokenEstimate: 3,
           sourcePath: "note.md",
+          lineStart: 2,
+          lineEnd: 4,
         },
       ],
     });
@@ -122,6 +124,8 @@ describe("ChatService", () => {
         title: "Selection in note.md",
         tokenEstimate: 3,
         sourcePath: "note.md",
+        lineStart: 2,
+        lineEnd: 4,
       },
     ]);
     expect(service.getState().session.messages[0]?.contextBlocks).toEqual(service.getState().contextBlocks);

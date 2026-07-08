@@ -41,11 +41,22 @@ export class PromptComposer {
 
 function renderContextBlock(block: ContextBlock): string {
   const source = block.sourcePath ? `\nSource: ${block.sourcePath}` : "";
+  const lines = formatLineRange(block);
   return [
     `<context-block id="${block.id}" type="${block.type}">`,
-    `Title: ${block.title}${source}`,
+    `Title: ${block.title}${source}${lines}`,
     "",
     block.content,
     "</context-block>",
   ].join("\n");
+}
+
+function formatLineRange(block: ContextBlock): string {
+  if (!block.lineStart || !block.lineEnd) {
+    return "";
+  }
+
+  return block.lineStart === block.lineEnd
+    ? `\nLines: ${block.lineStart}`
+    : `\nLines: ${block.lineStart}-${block.lineEnd}`;
 }

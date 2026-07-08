@@ -16,6 +16,8 @@ describe("PromptComposer", () => {
           content: "Selected text",
           priority: 100,
           tokenEstimate: 3,
+          lineStart: 4,
+          lineEnd: 6,
         },
       ],
     });
@@ -23,6 +25,7 @@ describe("PromptComposer", () => {
     expect(messages[0]?.role).toBe("system");
     expect(messages[1]).toEqual({ role: "assistant", content: "Earlier answer" });
     expect(messages[2]?.content).toContain("<context-block id=\"selection\" type=\"selection\">");
+    expect(messages[2]?.content).toContain("Lines: 4-6");
     expect(messages[2]?.content).toContain("Selected text");
     expect(messages[2]?.content).toContain("User request:\nWhat does this mean?");
   });

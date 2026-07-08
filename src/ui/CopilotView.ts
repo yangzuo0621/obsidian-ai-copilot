@@ -165,10 +165,27 @@ export class CopilotView extends ItemView {
       cls: "obsidian-ai-copilot-context-title",
       text: block.sourcePath ?? block.title,
     });
+    const lineLabel = this.formatContextLineLabel(block);
+    if (lineLabel) {
+      blockEl.createSpan({
+        cls: "obsidian-ai-copilot-context-lines",
+        text: lineLabel,
+      });
+    }
     blockEl.createSpan({
       cls: "obsidian-ai-copilot-context-tokens",
       text: `~${block.tokenEstimate} tokens`,
     });
+  }
+
+  private formatContextLineLabel(block: ContextBlockSummary): string | null {
+    if (!block.lineStart || !block.lineEnd) {
+      return null;
+    }
+
+    return block.lineStart === block.lineEnd
+      ? `Line ${block.lineStart}`
+      : `Lines ${block.lineStart}-${block.lineEnd}`;
   }
 
   private renderMessage(message: ChatMessageRecord): void {

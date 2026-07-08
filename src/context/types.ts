@@ -8,6 +8,8 @@ export interface ContextBlock {
   priority: number;
   tokenEstimate: number;
   sourcePath?: string;
+  lineStart?: number;
+  lineEnd?: number;
 }
 
 export interface ContextBlockSummary {
@@ -16,6 +18,8 @@ export interface ContextBlockSummary {
   title: string;
   tokenEstimate: number;
   sourcePath?: string;
+  lineStart?: number;
+  lineEnd?: number;
 }
 
 export interface ContextBuildOptions {
@@ -35,5 +39,7 @@ export function summarizeContextBlock(block: ContextBlock): ContextBlockSummary 
     title: block.title,
     tokenEstimate: block.tokenEstimate,
     sourcePath: block.sourcePath,
+    lineStart: block.lineStart,
+    lineEnd: block.lineEnd,
   };
 }
