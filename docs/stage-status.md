@@ -441,6 +441,7 @@ Disabling selection or current file context in settings prevents that context ty
 - Stage 4 remains read-only. It does not add editing commands or write note content.
 - Selection context takes precedence over current file context.
 - Current file context uses active Markdown view data when available so unsaved editor content can be included.
+- Selection context reads Obsidian `workspace.activeEditor` before falling back to the active or most recent Markdown view, so sidebar focus does not discard the editor selection.
 - Automated verification passed on 2026-07-08.
 - Local test vault deployment passed on 2026-07-08.
 

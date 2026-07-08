@@ -10,8 +10,9 @@ export class CurrentFileAdapter implements CurrentFileReader {
   ) {}
 
   async getCurrentFileSnapshot(): Promise<CurrentFileSnapshot | null> {
-    const view = this.workspace.getActiveMarkdownView();
-    const file = view?.file ?? this.workspace.getActiveFile();
+    const editorSnapshot = this.workspace.getActiveEditorSnapshot();
+    const view = editorSnapshot?.view;
+    const file = editorSnapshot?.file ?? this.workspace.getActiveFile();
     if (!file || file.extension !== "md") {
       return null;
     }

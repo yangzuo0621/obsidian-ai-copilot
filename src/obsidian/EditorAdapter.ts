@@ -6,7 +6,7 @@ export class EditorAdapter implements SelectionReader, ActiveFileReader {
   constructor(private readonly workspace: WorkspaceAdapter) {}
 
   getSelection(): string | null {
-    return this.workspace.getActiveMarkdownView()?.editor.getSelection() ?? null;
+    return this.workspace.getActiveEditorSnapshot()?.editor.getSelection() ?? null;
   }
 
   getActiveFilePath(): string | null {
