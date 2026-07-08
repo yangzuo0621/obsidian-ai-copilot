@@ -109,4 +109,23 @@ The project is intentionally stage-based and should keep `main` buildable. A sha
 - Stage work should use `codex/` branches unless another branch name is requested.
 - Pull requests are the default path for merging to `main`.
 - CI runs automated verification and does not run local vault deployment commands.
-- Future quality tools such as Vitest or ESLint should be added to `npm run verify` only after their initial baseline is stable.
+- Future quality tools such as ESLint should be added to `npm run verify` only after their initial baseline is stable.
+
+## ADR-007: Use Vitest for Unit Test Automation
+
+Status: Accepted
+
+### Decision
+
+The project will use Vitest for unit tests. Unit tests will be part of `npm run verify` and should initially focus on pure TypeScript behavior rather than Obsidian UI integration.
+
+### Reason
+
+Stage 2 introduced chat orchestration and provider request flow. These behaviors can regress without being caught by typechecking alone, but they are still small enough to test with fast unit tests and mocks.
+
+### Consequences
+
+- `npm run test` runs the unit test suite.
+- `npm run verify` runs build checks and unit tests.
+- New complex pure logic should include focused tests.
+- Obsidian UI and manual vault smoke tests remain separate from Vitest until a reliable integration strategy is needed.
