@@ -1,0 +1,6 @@
+main.js
+node_modules
+dist
+coverage
+.obsidian
+.env.local

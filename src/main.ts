@@ -31,10 +31,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     });
     this.chatService = new ChatService(() => this.copilotSettings, contextBuilder);
 
-    this.registerView(
-      COPILOT_VIEW_TYPE,
-      (leaf: WorkspaceLeaf) => new CopilotView(leaf, this.chatService),
-    );
+    this.registerView(COPILOT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CopilotView(leaf, this.chatService));
 
     this.addSettingTab(new CopilotSettingsTab(this));
 

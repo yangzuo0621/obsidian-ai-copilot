@@ -183,9 +183,7 @@ export class CopilotView extends ItemView {
       return null;
     }
 
-    return block.lineStart === block.lineEnd
-      ? `Line ${block.lineStart}`
-      : `Lines ${block.lineStart}-${block.lineEnd}`;
+    return block.lineStart === block.lineEnd ? `Line ${block.lineStart}` : `Lines ${block.lineStart}-${block.lineEnd}`;
   }
 
   private renderMessage(message: ChatMessageRecord): void {

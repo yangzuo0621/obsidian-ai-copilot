@@ -213,11 +213,7 @@ export interface LLMProvider {
   id: string;
   label: string;
   complete(request: CompletionRequest): Promise<CompletionResult>;
-  stream(
-    request: CompletionRequest,
-    callbacks: StreamCallbacks,
-    signal?: AbortSignal
-  ): Promise<void>;
+  stream(request: CompletionRequest, callbacks: StreamCallbacks, signal?: AbortSignal): Promise<void>;
 }
 ```
 
@@ -254,13 +250,7 @@ export interface StreamCallbacks {
 ```ts
 export interface ContextBlock {
   id: string;
-  type:
-    | "selection"
-    | "current-file"
-    | "linked-note"
-    | "vault-search"
-    | "frontmatter"
-    | "manual";
+  type: "selection" | "current-file" | "linked-note" | "vault-search" | "frontmatter" | "manual";
   title: string;
   content: string;
   priority: number;
@@ -745,4 +735,3 @@ export interface Tool {
 - 创建 `styles.css`。
 - 配置 esbuild。
 - 跑通一次 build。
-

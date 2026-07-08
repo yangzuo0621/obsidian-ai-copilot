@@ -45,10 +45,7 @@ async function readLocalEnv() {
 }
 
 const localEnv = await readLocalEnv();
-const pluginsDir =
-  process.argv[2] ??
-  process.env.OBSIDIAN_PLUGINS_DIR ??
-  localEnv.get("OBSIDIAN_PLUGINS_DIR");
+const pluginsDir = process.argv[2] ?? process.env.OBSIDIAN_PLUGINS_DIR ?? localEnv.get("OBSIDIAN_PLUGINS_DIR");
 
 if (!pluginsDir) {
   console.error(
