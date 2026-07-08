@@ -7,6 +7,7 @@
     "build": "npm run typecheck && node esbuild.config.mjs production",
     "deploy:test": "npm run build && node scripts/deploy-test-plugin.mjs",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run build",
     "dev": "node esbuild.config.mjs"
   },
   "keywords": [
