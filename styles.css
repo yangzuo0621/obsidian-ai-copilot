@@ -114,3 +114,11 @@
 .obsidian-ai-copilot-send {
   align-self: flex-end;
 }
+
+.obsidian-ai-copilot-stop {
+  align-self: flex-end;
+}
+
+.obsidian-ai-copilot-stop.is-hidden {
+  display: none;
+}

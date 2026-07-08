@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 2
+Current stage: 3
 Current status: completed
 
 ## Project Verification
@@ -34,7 +34,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 0: Project scaffold
 - [x] Stage 1: Settings and provider abstraction
 - [x] Stage 2: Copilot sidebar and basic chat
-- [ ] Stage 3: Streaming and abort
+- [x] Stage 3: Streaming and abort
 - [ ] Stage 4: Current note and selection context
 - [ ] Stage 5: Editing commands
 - [ ] Stage 6: Chat history persistence
@@ -295,7 +295,7 @@ Provider failures render as an error message in the sidebar and show a Notice.
 
 ## Stage 3: Streaming and Abort
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -307,6 +307,58 @@ Support token-by-token assistant responses and stop generation.
 - Stream controller.
 - Abort manager.
 - UI stop button and streaming state.
+
+### Files
+
+- `src/providers/types.ts`
+- `src/providers/OpenAICompatibleProvider.ts`
+- `src/streaming/AbortManager.ts`
+- `src/streaming/StreamController.ts`
+- `src/chat/types.ts`
+- `src/chat/ChatService.ts`
+- `src/ui/CopilotView.ts`
+- `styles.css`
+- `docs/stage-status.md`
+
+### Completion Criteria
+
+- OpenAI-compatible provider can send streaming chat completions requests.
+- Streaming responses append assistant tokens incrementally.
+- Active streaming requests can be stopped through the Copilot sidebar.
+- Stopped requests restore the UI to an idle state and mark the assistant message as stopped.
+- Streaming and abort behavior are covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat`.
+Typing a message streams the assistant response into the latest assistant message.
+Clicking Stop cancels the active request.
+After Stop, the composer returns to an idle state and the assistant message is marked Stopped.
+Provider streaming failures render as an error message in the sidebar and show a Notice.
+```
+
+### Notes
+
+- Stage 3 keeps chat history in memory only.
+- Stage 3 does not add note, selection, or vault context.
+- Provider streaming uses OpenAI-compatible chat completions SSE chunks and `AbortSignal` cancellation.
+- Automated verification passed on 2026-07-08.
 
 ## Stage 4: Current Note and Selection Context
 

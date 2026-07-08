@@ -5,19 +5,20 @@ import { DEFAULT_SETTINGS } from "../settings/defaults";
 import { ChatService } from "./ChatService";
 import type { ChatState } from "./types";
 
-const providerComplete = vi.hoisted(() => vi.fn());
+const providerStream = vi.hoisted(() => vi.fn());
 
 vi.mock("../providers/ProviderRegistry", () => ({
   createProvider: () => ({
     id: "test-provider",
     label: "Test provider",
-    complete: providerComplete,
+    complete: vi.fn(),
+    stream: providerStream,
   }),
 }));
 
 describe("ChatService", () => {
   beforeEach(() => {
-    providerComplete.mockReset();
+    providerStream.mockReset();
   });
 
   it("notifies subscribers with the initial state", () => {
@@ -36,10 +37,11 @@ describe("ChatService", () => {
     });
   });
 
-  it("sends trimmed user input and stores the assistant response", async () => {
-    providerComplete.mockResolvedValue({
-      content: "Assistant reply",
-      raw: {},
+  it("streams trimmed user input and stores the assistant response", async () => {
+    providerStream.mockImplementation(async (_request, callbacks) => {
+      callbacks.onToken("Assistant ");
+      callbacks.onToken("reply");
+      callbacks.onDone();
     });
     const service = new ChatService(() => ({
       ...DEFAULT_SETTINGS,
@@ -51,11 +53,11 @@ describe("ChatService", () => {
 
     await service.sendMessage("  Hello model  ");
 
-    expect(providerComplete).toHaveBeenCalledWith({
+    expect(providerStream).toHaveBeenCalledWith({
       model: "test-model",
       temperature: 0.2,
       messages: [{ role: "user", content: "Hello model" }],
-    });
+    }, expect.any(Object), expect.any(AbortSignal));
     expect(service.getState()).toMatchObject({
       isSending: false,
       session: {
@@ -67,10 +69,11 @@ describe("ChatService", () => {
       },
     });
     expect(states.some((state) => state.isSending)).toBe(true);
+    expect(states.some((state) => state.session.messages[1]?.status === "streaming")).toBe(true);
   });
 
   it("records provider failures on the assistant message", async () => {
-    providerComplete.mockRejectedValue(new Error("Network down"));
+    providerStream.mockRejectedValue(new Error("Network down"));
     const service = new ChatService(() => DEFAULT_SETTINGS);
 
     await service.sendMessage("Hello");
@@ -88,15 +91,15 @@ describe("ChatService", () => {
 
     await service.sendMessage("   ");
 
-    expect(providerComplete).not.toHaveBeenCalled();
+    expect(providerStream).not.toHaveBeenCalled();
     expect(service.getState().session.messages).toEqual([]);
   });
 
   it("ignores a second send while a request is in flight", async () => {
     let resolveRequest!: () => void;
-    providerComplete.mockReturnValue(
+    providerStream.mockReturnValue(
       new Promise((resolve) => {
-        resolveRequest = () => resolve({ content: "Done", raw: {} });
+        resolveRequest = () => resolve(undefined);
       }),
     );
     const service = new ChatService(() => DEFAULT_SETTINGS);
@@ -106,7 +109,41 @@ describe("ChatService", () => {
     resolveRequest();
     await firstSend;
 
-    expect(providerComplete).toHaveBeenCalledTimes(1);
+    expect(providerStream).toHaveBeenCalledTimes(1);
     expect(service.getState().session.messages[0]?.content).toBe("First");
+  });
+
+  it("stops an active streamed response", async () => {
+    providerStream.mockImplementation(
+      (_request, callbacks, signal?: AbortSignal) =>
+        new Promise((_resolve, reject) => {
+          callbacks.onToken("Partial");
+          signal?.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
+        }),
+    );
+    const service = new ChatService(() => DEFAULT_SETTINGS);
+
+    const send = service.sendMessage("Hello");
+    await vi.waitFor(() => {
+      expect(service.getState().session.messages[1]).toMatchObject({
+        content: "Partial",
+        status: "streaming",
+      });
+    });
+
+    service.stopGeneration();
+    await send;
+
+    expect(service.getState()).toMatchObject({
+      isSending: false,
+      session: {
+        messages: [
+          { role: "user", content: "Hello", status: "done" },
+          { role: "assistant", content: "Partial", status: "aborted" },
+        ],
+      },
+    });
   });
 });

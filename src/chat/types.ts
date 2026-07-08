@@ -2,7 +2,7 @@ import type { ChatMessage } from "../providers/types";
 
 export type ChatMessageRole = ChatMessage["role"];
 
-export type ChatMessageStatus = "pending" | "done" | "error";
+export type ChatMessageStatus = "pending" | "streaming" | "done" | "aborted" | "error";
 
 export interface ChatMessageRecord {
   id: string;
