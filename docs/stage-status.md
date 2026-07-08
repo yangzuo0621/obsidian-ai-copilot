@@ -18,6 +18,7 @@ npm run verify
 ```
 
 `npm run verify` is the baseline command for local checks and GitHub Actions. It currently runs typechecking and production build.
+After the Vitest baseline, it also runs unit tests.
 
 Local smoke verification:
 
