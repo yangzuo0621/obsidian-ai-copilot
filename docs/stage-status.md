@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 1
+Current stage: 2
 Current status: completed
 
 ## Project Verification
@@ -32,7 +32,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 
 - [x] Stage 0: Project scaffold
 - [x] Stage 1: Settings and provider abstraction
-- [ ] Stage 2: Copilot sidebar and basic chat
+- [x] Stage 2: Copilot sidebar and basic chat
 - [ ] Stage 3: Streaming and abort
 - [ ] Stage 4: Current note and selection context
 - [ ] Stage 5: Editing commands
@@ -223,23 +223,74 @@ The command shows a success or failure Notice.
 
 ## Stage 2: Copilot Sidebar and Basic Chat
 
-Status: planned
+Status: completed
 
 ### Goal
 
 Add a usable Copilot sidebar with basic non-streaming chat.
 
-### Summary Scope
+### Scope
 
 - Register Copilot view.
 - Render message list and composer.
 - Add in-memory chat session.
 - Wire `ChatService.sendMessage()`.
 
-### Summary Out of Scope
+### Out of Scope
 
 - No streaming.
 - No context injection beyond plain user input.
+
+### Files
+
+- `src/main.ts`
+- `src/chat/types.ts`
+- `src/chat/ChatSession.ts`
+- `src/chat/ChatService.ts`
+- `src/ui/CopilotView.ts`
+- `styles.css`
+- `docs/stage-status.md`
+
+### Completion Criteria
+
+- Command palette includes `Ask Copilot: Open Chat`.
+- The Copilot sidebar can be opened from the command palette or ribbon icon.
+- The sidebar renders an in-memory message list and composer.
+- Sending a message calls the configured provider through `ChatService.sendMessage()`.
+- The assistant response or provider error is displayed in the sidebar.
+- Chat state is intentionally in-memory only.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat` from the command palette.
+The ribbon icon opens the same Copilot sidebar.
+Typing a message and clicking Send sends one non-streaming provider request.
+The user message and assistant response appear in the sidebar.
+Provider failures render as an error message in the sidebar and show a Notice.
+```
+
+### Notes
+
+- Stage 2 uses the existing OpenAI-compatible non-streaming provider.
+- UI code calls `ChatService` rather than model providers directly.
+- Plain chat history is sent as provider messages, but no note context is injected.
+- Streaming, cancellation, and persisted sessions remain deferred to later stages.
 
 ## Stage 3: Streaming and Abort
 

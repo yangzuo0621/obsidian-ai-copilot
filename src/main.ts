@@ -1,15 +1,25 @@
-import { Notice, Plugin } from "obsidian";
+import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 
+import { ChatService } from "./chat/ChatService";
 import { createProvider } from "./providers/ProviderRegistry";
 import { normalizeSettings } from "./settings/defaults";
 import { CopilotSettingsTab } from "./settings/SettingsTab";
 import type { CopilotSettings } from "./settings/types";
+import { COPILOT_VIEW_TYPE, CopilotView } from "./ui/CopilotView";
 
 export default class ObsidianAICopilotPlugin extends Plugin {
   copilotSettings!: CopilotSettings;
+  private chatService!: ChatService;
 
   override async onload(): Promise<void> {
     await this.loadSettings();
+    this.chatService = new ChatService(() => this.copilotSettings);
+
+    this.registerView(
+      COPILOT_VIEW_TYPE,
+      (leaf: WorkspaceLeaf) => new CopilotView(leaf, this.chatService),
+    );
+
     this.addSettingTab(new CopilotSettingsTab(this));
 
     this.addCommand({
@@ -18,6 +28,18 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       callback: () => {
         new Notice("Obsidian AI Copilot is loaded.");
       },
+    });
+
+    this.addCommand({
+      id: "ask-copilot-open-chat",
+      name: "Ask Copilot: Open Chat",
+      callback: async () => {
+        await this.activateCopilotView();
+      },
+    });
+
+    this.addRibbonIcon("bot", "Open AI Copilot", () => {
+      void this.activateCopilotView();
     });
 
     this.addCommand({
@@ -64,5 +86,24 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       console.error("Obsidian AI Copilot provider test failed:", error);
       new Notice(`Provider test failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private async activateCopilotView(): Promise<void> {
+    const existingLeaves = this.app.workspace.getLeavesOfType(COPILOT_VIEW_TYPE);
+    let leaf: WorkspaceLeaf | null = existingLeaves[0] ?? null;
+
+    if (!leaf) {
+      leaf = this.app.workspace.getRightLeaf(false);
+      if (!leaf) {
+        throw new Error("Unable to create Copilot sidebar leaf.");
+      }
+
+      await leaf.setViewState({
+        type: COPILOT_VIEW_TYPE,
+        active: true,
+      });
+    }
+
+    this.app.workspace.revealLeaf(leaf);
   }
 }
