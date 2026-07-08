@@ -25,9 +25,7 @@ describe("EditorAdapter", () => {
       getActiveEditorSnapshot: () => ({
         editor: {
           getSelection: () => "selected text",
-          getCursor: (side: "from" | "to") => side === "from"
-            ? { line: 4, ch: 2 }
-            : { line: 6, ch: 8 },
+          getCursor: (side: "from" | "to") => (side === "from" ? { line: 4, ch: 2 } : { line: 6, ch: 8 }),
         },
         file: null,
         view: null,

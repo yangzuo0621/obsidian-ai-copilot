@@ -15,7 +15,9 @@ export class CopilotSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("API key")
-      .setDesc("Stored in Obsidian plugin data. Leave blank only for compatible local endpoints that do not require a key.")
+      .setDesc(
+        "Stored in Obsidian plugin data. Leave blank only for compatible local endpoints that do not require a key.",
+      )
       .addText((text) => {
         text.inputEl.type = "password";
         text
@@ -87,24 +89,20 @@ export class CopilotSettingsTab extends PluginSettingTab {
       .setName("Include selection")
       .setDesc("When text is selected in the active note, include it as the highest-priority context.")
       .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.copilotSettings.includeSelection)
-          .onChange(async (value) => {
-            this.plugin.copilotSettings.includeSelection = value;
-            await this.plugin.saveSettings();
-          });
+        toggle.setValue(this.plugin.copilotSettings.includeSelection).onChange(async (value) => {
+          this.plugin.copilotSettings.includeSelection = value;
+          await this.plugin.saveSettings();
+        });
       });
 
     new Setting(containerEl)
       .setName("Include current file")
       .setDesc("When there is no selection, include the active note as context.")
       .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.copilotSettings.includeCurrentFile)
-          .onChange(async (value) => {
-            this.plugin.copilotSettings.includeCurrentFile = value;
-            await this.plugin.saveSettings();
-          });
+        toggle.setValue(this.plugin.copilotSettings.includeCurrentFile).onChange(async (value) => {
+          this.plugin.copilotSettings.includeCurrentFile = value;
+          await this.plugin.saveSettings();
+        });
       });
   }
 }

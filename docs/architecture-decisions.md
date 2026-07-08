@@ -148,3 +148,22 @@ Stage 3 introduced more asynchronous and cross-module behavior around streaming 
 - `npm run verify` runs lint, build, and unit tests.
 - The initial rule set stays conservative and focuses on correctness and type-import hygiene.
 - More opinionated style rules should be introduced separately, after the codebase has a clean baseline.
+
+## ADR-009: Use Prettier for Formatting
+
+Status: Accepted
+
+### Decision
+
+The project will use Prettier for automated formatting. Format checks are part of `npm run verify`.
+
+### Reason
+
+The codebase now has enough modules, tests, docs, and configuration files that formatting differences can create review noise. Prettier keeps formatting mechanical and lets ESLint focus on code quality rules.
+
+### Consequences
+
+- `npm run format` writes Prettier formatting changes.
+- `npm run format:check` verifies formatting without writing files.
+- `npm run verify` runs format checks, lint, build, and unit tests.
+- Formatting-only changes should stay separate from feature work whenever possible.

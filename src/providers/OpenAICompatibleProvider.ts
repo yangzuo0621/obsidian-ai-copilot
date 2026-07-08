@@ -141,7 +141,10 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   }
 }
 
-async function readServerSentEvents(body: ReadableStream<Uint8Array>, onData: (payload: string) => void): Promise<void> {
+async function readServerSentEvents(
+  body: ReadableStream<Uint8Array>,
+  onData: (payload: string) => void,
+): Promise<void> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";

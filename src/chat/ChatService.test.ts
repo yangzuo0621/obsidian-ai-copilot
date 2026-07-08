@@ -54,14 +54,18 @@ describe("ChatService", () => {
 
     await service.sendMessage("  Hello model  ");
 
-    expect(providerStream).toHaveBeenCalledWith({
-      model: "test-model",
-      temperature: 0.2,
-      messages: [
-        { role: "system", content: expect.stringContaining("Obsidian") },
-        { role: "user", content: "Hello model" },
-      ],
-    }, expect.any(Object), expect.any(AbortSignal));
+    expect(providerStream).toHaveBeenCalledWith(
+      {
+        model: "test-model",
+        temperature: 0.2,
+        messages: [
+          { role: "system", content: expect.stringContaining("Obsidian") },
+          { role: "user", content: "Hello model" },
+        ],
+      },
+      expect.any(Object),
+      expect.any(AbortSignal),
+    );
     expect(service.getState()).toMatchObject({
       isSending: false,
       session: {
