@@ -9,12 +9,13 @@ This document defines how Codex should advance this project. It is intentionally
 3. Identify the current active stage.
 4. Read the matching section in `docs/copilot-for-obsidian-implementation-plan.md`.
 5. Check the git state with `git status --short --branch`.
-6. Implement only the active stage scope.
-7. Run the verification commands listed for the stage.
-8. Update `docs/stage-status.md`.
-9. Update `docs/architecture-decisions.md` if an architecture decision changed or was added.
-10. Commit the completed stage if verification passes.
-11. Stop and report the result.
+6. Create or switch to a stage branch using the `codex/` prefix unless the user requested a different branch.
+7. Implement only the active stage scope.
+8. Run the verification commands listed for the stage.
+9. Update `docs/stage-status.md`.
+10. Update `docs/architecture-decisions.md` if an architecture decision changed or was added.
+11. Commit the completed stage if verification passes.
+12. Stop and report the result. Do not push or merge unless the user explicitly asks.
 
 ## Stage Discipline
 
@@ -47,7 +48,27 @@ Codex should:
 
 Use the stage-specific verification section in `docs/stage-status.md`.
 
+Automated verification should be runnable locally and in CI. The baseline command is:
+
+```txt
+npm run verify
+```
+
+Local smoke verification may depend on a developer machine or Obsidian vault, so it is documented separately and is not required in GitHub Actions. This includes commands such as:
+
+```txt
+npm run deploy:test
+```
+
 If a command cannot run because dependencies or project files do not exist yet, document that clearly in the stage notes. For example, Stage 0 creates the first build setup, so verification evolves during that stage.
+
+## Pull Request Policy
+
+- Stage and feature work should be merged through pull requests.
+- Pull requests must pass the GitHub Actions verification workflow before merge.
+- `main` should remain buildable at all times.
+- CI runs automated verification only; local Obsidian smoke tests remain manual.
+- Do not push branches, create PRs, or merge unless the user explicitly asks.
 
 ## Commit Policy
 
@@ -76,4 +97,3 @@ Stop and ask the user when:
 - A destructive action would be needed.
 - A secret, token, API key, or private account choice is required.
 - Verification fails for reasons that cannot be resolved locally.
-

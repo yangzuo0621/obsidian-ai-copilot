@@ -92,3 +92,21 @@ Obsidian vaults are personal knowledge bases. Silent or autonomous writes can ca
 - Future agent tools that write files must include confirmation or preview.
 - Read-only capabilities should be implemented before autonomous write tools.
 
+## ADR-006: Verify Changes Through Pull Requests and CI
+
+Status: Accepted
+
+### Decision
+
+Stage and feature changes will be developed on branches, reviewed through pull requests, and merged only after the GitHub Actions verification workflow passes.
+
+### Reason
+
+The project is intentionally stage-based and should keep `main` buildable. A shared `npm run verify` command gives local development and CI the same automated quality gate while keeping machine-specific Obsidian smoke tests separate.
+
+### Consequences
+
+- Stage work should use `codex/` branches unless another branch name is requested.
+- Pull requests are the default path for merging to `main`.
+- CI runs automated verification and does not run local vault deployment commands.
+- Future quality tools such as Vitest or ESLint should be added to `npm run verify` only after their initial baseline is stable.

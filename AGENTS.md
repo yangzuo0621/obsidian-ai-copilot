@@ -17,6 +17,8 @@ Before implementing a stage, read:
 
 - Work on one stage at a time.
 - Do not implement future-stage features unless explicitly requested.
+- Do stage and feature work on a branch, not directly on `main`.
+- Merge stage and feature work through pull requests after CI passes.
 - On Windows, prefer PowerShell 7 (`pwsh`) for project commands when available.
 - Keep changes scoped to the active stage.
 - Prefer clear interfaces and types before implementation.
@@ -39,6 +41,8 @@ Before implementing a stage, read:
 ## Git Rules
 
 - Keep commits small and stage-focused.
+- Use branch names with the `codex/` prefix unless the user asks for another name.
+- Do not merge directly to `main`; prepare changes for PR review.
 - Do not rewrite history unless explicitly requested.
 - Do not commit `.agents/`, `work/`, secrets, API keys, or local machine state.
 - Check `git status --short --branch` before and after edits.

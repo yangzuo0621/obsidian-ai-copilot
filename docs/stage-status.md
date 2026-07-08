@@ -9,6 +9,25 @@ Future stages are planning placeholders. They may be revised before implementati
 Current stage: 1
 Current status: completed
 
+## Project Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+`npm run verify` is the baseline command for local checks and GitHub Actions. It currently runs typechecking and production build.
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+npm run deploy:test -- <test-vault>/.obsidian/plugins
+```
+
+Local smoke verification depends on an Obsidian test vault and is not required in GitHub Actions.
+
 ## Stage Checklist
 
 - [x] Stage 0: Project scaffold
@@ -73,8 +92,15 @@ Create the minimum Obsidian plugin project skeleton that can build and be loaded
 
 ### Verification
 
+Automated verification:
+
 ```txt
-npm run build
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
 npm run deploy:test
 npm run deploy:test -- <test-vault>/.obsidian/plugins
 git status --short --branch
@@ -166,9 +192,15 @@ Add plugin settings and the first model provider abstraction.
 
 ### Verification
 
+Automated verification:
+
 ```txt
-npm run typecheck
-npm run build
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
 npm run deploy:test
 git status --short --branch
 ```
