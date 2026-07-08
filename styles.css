@@ -29,6 +29,56 @@
   white-space: nowrap;
 }
 
+.obsidian-ai-copilot-context-preview {
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding: 8px 12px;
+}
+
+.obsidian-ai-copilot-context-empty {
+  line-height: 1.4;
+}
+
+.obsidian-ai-copilot-context-label {
+  color: var(--text-faint);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.obsidian-ai-copilot-context-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.obsidian-ai-copilot-context-block {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.obsidian-ai-copilot-context-type {
+  background: var(--background-modifier-border);
+  border-radius: 6px;
+  color: var(--text-normal);
+  flex: 0 0 auto;
+  padding: 2px 6px;
+}
+
+.obsidian-ai-copilot-context-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsidian-ai-copilot-context-tokens {
+  color: var(--text-faint);
+  flex: 0 0 auto;
+}
+
 .obsidian-ai-copilot-messages {
   display: flex;
   flex: 1;

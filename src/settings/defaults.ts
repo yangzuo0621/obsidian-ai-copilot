@@ -7,6 +7,8 @@ export const DEFAULT_SETTINGS: CopilotSettings = {
   model: "gpt-4o-mini",
   temperature: 0.7,
   contextTokenBudget: 4000,
+  includeCurrentFile: true,
+  includeSelection: true,
 };
 
 export function normalizeSettings(data: Partial<CopilotSettings> | null | undefined): CopilotSettings {

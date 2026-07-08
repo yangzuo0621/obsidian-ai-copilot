@@ -30,6 +30,7 @@ describe("ChatService", () => {
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener.mock.calls[0]?.[0]).toMatchObject({
       isSending: false,
+      contextBlocks: [],
       session: {
         title: "New chat",
         messages: [],
@@ -56,7 +57,10 @@ describe("ChatService", () => {
     expect(providerStream).toHaveBeenCalledWith({
       model: "test-model",
       temperature: 0.2,
-      messages: [{ role: "user", content: "Hello model" }],
+      messages: [
+        { role: "system", content: expect.stringContaining("Obsidian") },
+        { role: "user", content: "Hello model" },
+      ],
     }, expect.any(Object), expect.any(AbortSignal));
     expect(service.getState()).toMatchObject({
       isSending: false,
@@ -84,6 +88,43 @@ describe("ChatService", () => {
       status: "error",
       error: "Network down",
     });
+  });
+
+  it("injects context into the provider request and state", async () => {
+    providerStream.mockImplementation(async (_request, callbacks) => {
+      callbacks.onToken("Contextual answer");
+      callbacks.onDone();
+    });
+    const service = new ChatService(() => DEFAULT_SETTINGS, {
+      build: async () => [
+        {
+          id: "selection",
+          type: "selection",
+          title: "Selection in note.md",
+          content: "Selected text",
+          priority: 100,
+          tokenEstimate: 3,
+          sourcePath: "note.md",
+        },
+      ],
+    });
+
+    await service.sendMessage("Explain this");
+
+    expect(providerStream.mock.calls[0]?.[0].messages.at(-1)).toEqual({
+      role: "user",
+      content: expect.stringContaining("Selected text"),
+    });
+    expect(service.getState().contextBlocks).toEqual([
+      {
+        id: "selection",
+        type: "selection",
+        title: "Selection in note.md",
+        tokenEstimate: 3,
+        sourcePath: "note.md",
+      },
+    ]);
+    expect(service.getState().session.messages[0]?.contextBlocks).toEqual(service.getState().contextBlocks);
   });
 
   it("ignores empty messages", async () => {
