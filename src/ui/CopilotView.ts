@@ -33,17 +33,29 @@ export class CopilotView extends ItemView {
     return "bot";
   }
 
+  override onload(): void {
+    this.initializeView();
+  }
+
   override async onOpen(): Promise<void> {
-    this.buildLayout();
-    this.unsubscribe = this.chatService.subscribe((state) => {
-      this.currentState = state;
-      this.render(state);
-    });
+    this.initializeView();
   }
 
   override async onClose(): Promise<void> {
     this.unsubscribe?.();
     this.unsubscribe = null;
+  }
+
+  private initializeView(): void {
+    if (this.unsubscribe) {
+      return;
+    }
+
+    this.buildLayout();
+    this.unsubscribe = this.chatService.subscribe((state) => {
+      this.currentState = state;
+      this.render(state);
+    });
   }
 
   private buildLayout(): void {

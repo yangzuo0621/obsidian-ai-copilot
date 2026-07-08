@@ -34,12 +34,12 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       id: "ask-copilot-open-chat",
       name: "Ask Copilot: Open Chat",
       callback: async () => {
-        await this.activateCopilotView();
+        await this.openCopilotViewWithNotice();
       },
     });
 
     this.addRibbonIcon("bot", "Open AI Copilot", () => {
-      void this.activateCopilotView();
+      void this.openCopilotViewWithNotice();
     });
 
     this.addCommand({
@@ -105,5 +105,14 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     }
 
     this.app.workspace.revealLeaf(leaf);
+  }
+
+  private async openCopilotViewWithNotice(): Promise<void> {
+    try {
+      await this.activateCopilotView();
+    } catch (error) {
+      console.error("Failed to open AI Copilot view:", error);
+      new Notice(`Failed to open AI Copilot: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }
