@@ -6,10 +6,11 @@
   "scripts": {
     "build": "npm run typecheck && node esbuild.config.mjs production",
     "deploy:test": "npm run build && node scripts/deploy-test-plugin.mjs",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run build && npm run test",
+    "verify": "npm run lint && npm run build && npm run test",
     "dev": "node esbuild.config.mjs"
   },
   "keywords": [
@@ -21,11 +22,15 @@
   "author": "yangzuo0621",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.0",
     "builtin-modules": "^5.3.0",
     "esbuild": "^0.28.1",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "obsidian": "^1.13.1",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
     "vitest": "^4.1.10"
   }
 }
