@@ -1,4 +1,5 @@
-export type ContextBlockType = "selection" | "current-file" | "linked-note" | "vault-search" | "frontmatter" | "manual";
+export type ContextBlockType =
+  "selection" | "current-file" | "linked-note" | "vault-search" | "semantic-search" | "frontmatter" | "manual";
 
 export interface ContextBlock {
   id: string;
@@ -26,6 +27,7 @@ export interface ContextBuildOptions {
   includeCurrentFile: boolean;
   includeSelection: boolean;
   includeVaultSearch: boolean;
+  includeEmbeddingRetrieval: boolean;
   tokenBudget: number;
   userInput: string;
 }

@@ -13,6 +13,7 @@ describe("ContextBuilder", () => {
       includeCurrentFile: true,
       includeSelection: true,
       includeVaultSearch: false,
+      includeEmbeddingRetrieval: false,
       tokenBudget: 100,
       userInput: "question",
     });
@@ -30,6 +31,7 @@ describe("ContextBuilder", () => {
       includeCurrentFile: true,
       includeSelection: true,
       includeVaultSearch: false,
+      includeEmbeddingRetrieval: false,
       tokenBudget: 100,
       userInput: "question",
     });
@@ -49,12 +51,37 @@ describe("ContextBuilder", () => {
       includeCurrentFile: true,
       includeSelection: true,
       includeVaultSearch: true,
+      includeEmbeddingRetrieval: false,
       tokenBudget: 100,
       userInput: "search terms",
     });
 
     expect(vaultSearch.collect).toHaveBeenCalledWith("search terms");
     expect(blocks.map((block) => block.id)).toEqual(["current-file", "vault-search"]);
+  });
+
+  it("adds semantic search context when embedding retrieval is enabled", async () => {
+    const selection = createSource(null);
+    const currentFile = createSource(createBlock("current-file", "current-file"));
+    const vaultSearch = {
+      collect: vi.fn(async () => [createBlock("vault-search", "vault-search")]),
+    };
+    const semanticSearch = {
+      collect: vi.fn(async () => [createBlock("semantic-search", "semantic-search")]),
+    };
+    const builder = new ContextBuilder({ selection, currentFile, vaultSearch, semanticSearch });
+
+    const blocks = await builder.build({
+      includeCurrentFile: true,
+      includeSelection: true,
+      includeVaultSearch: true,
+      includeEmbeddingRetrieval: true,
+      tokenBudget: 100,
+      userInput: "search terms",
+    });
+
+    expect(semanticSearch.collect).toHaveBeenCalledWith("search terms");
+    expect(blocks.map((block) => block.id)).toEqual(["current-file", "semantic-search", "vault-search"]);
   });
 });
 
@@ -64,13 +91,16 @@ function createSource(block: ContextBlock | null): ContextSource {
   };
 }
 
-function createBlock(id: string, type: "selection" | "current-file" | "vault-search"): ContextBlock {
+function createBlock(
+  id: string,
+  type: "selection" | "current-file" | "vault-search" | "semantic-search",
+): ContextBlock {
   return {
     id,
     type,
     title: id,
     content: "content",
-    priority: type === "selection" ? 100 : type === "current-file" ? 60 : 30,
+    priority: type === "selection" ? 100 : type === "current-file" ? 60 : type === "semantic-search" ? 35 : 30,
     tokenEstimate: 2,
   };
 }

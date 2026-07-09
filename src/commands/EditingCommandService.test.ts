@@ -56,6 +56,7 @@ describe("EditingCommandService", () => {
       includeCurrentFile: false,
       includeSelection: true,
       includeVaultSearch: false,
+      includeEmbeddingRetrieval: false,
       tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
       userInput: "Explain this selection.",
     });
@@ -93,6 +94,7 @@ describe("EditingCommandService", () => {
       includeCurrentFile: true,
       includeSelection: false,
       includeVaultSearch: false,
+      includeEmbeddingRetrieval: false,
       tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
       userInput: "Summarize the current note.",
     });

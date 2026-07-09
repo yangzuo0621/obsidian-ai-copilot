@@ -5,6 +5,7 @@ export interface ContextBuilderSources {
   selection: ContextSource;
   currentFile: ContextSource;
   vaultSearch?: QueryContextSource;
+  semanticSearch?: QueryContextSource;
 }
 
 export class ContextBuilder {
@@ -32,6 +33,10 @@ export class ContextBuilder {
 
     if (options.includeVaultSearch && this.sources.vaultSearch) {
       blocks.push(...(await this.sources.vaultSearch.collect(options.userInput)));
+    }
+
+    if (options.includeEmbeddingRetrieval && this.sources.semanticSearch) {
+      blocks.push(...(await this.sources.semanticSearch.collect(options.userInput)));
     }
 
     return this.budget.apply(blocks, options.tokenBudget);

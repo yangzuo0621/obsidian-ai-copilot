@@ -254,6 +254,10 @@ export class CopilotView extends ItemView {
       return "Vault search";
     }
 
+    if (block.type === "semantic-search") {
+      return "Semantic search";
+    }
+
     return "Context";
   }
 

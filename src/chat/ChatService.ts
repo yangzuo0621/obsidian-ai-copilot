@@ -18,6 +18,7 @@ interface ContextBuilderLike {
     includeCurrentFile: boolean;
     includeSelection: boolean;
     includeVaultSearch: boolean;
+    includeEmbeddingRetrieval: boolean;
     tokenBudget: number;
     userInput: string;
   }): Promise<ContextBlock[]>;
@@ -208,6 +209,7 @@ export class ChatService {
       includeCurrentFile: settings.includeCurrentFile,
       includeSelection: settings.includeSelection,
       includeVaultSearch: settings.includeVaultSearch,
+      includeEmbeddingRetrieval: settings.includeEmbeddingRetrieval,
       tokenBudget: settings.contextTokenBudget,
       userInput,
     });

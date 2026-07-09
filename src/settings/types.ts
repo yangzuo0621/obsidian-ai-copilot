@@ -5,7 +5,9 @@ export interface CopilotSettings {
   model: string;
   temperature: number;
   contextTokenBudget: number;
+  embeddingModel: string;
   includeCurrentFile: boolean;
   includeSelection: boolean;
   includeVaultSearch: boolean;
+  includeEmbeddingRetrieval: boolean;
 }

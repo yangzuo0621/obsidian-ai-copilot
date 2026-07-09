@@ -56,6 +56,19 @@ export class CopilotSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Embedding model")
+      .setDesc("Embedding model used when semantic retrieval is enabled.")
+      .addText((text) => {
+        text
+          .setPlaceholder("text-embedding-3-small")
+          .setValue(this.plugin.copilotSettings.embeddingModel)
+          .onChange(async (value) => {
+            this.plugin.copilotSettings.embeddingModel = value.trim();
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(containerEl)
       .setName("Temperature")
       .setDesc("Controls response randomness.")
       .addSlider((slider) => {
@@ -111,6 +124,16 @@ export class CopilotSettingsTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.copilotSettings.includeVaultSearch).onChange(async (value) => {
           this.plugin.copilotSettings.includeVaultSearch = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Include embedding retrieval")
+      .setDesc("Index Markdown chunks and include semantic search results as context. Requires an embedding model.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.copilotSettings.includeEmbeddingRetrieval).onChange(async (value) => {
+          this.plugin.copilotSettings.includeEmbeddingRetrieval = value;
           await this.plugin.saveSettings();
         });
       });
