@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 4
+Current stage: 5
 Current status: completed
 
 ## Project Verification
@@ -38,7 +38,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 2: Copilot sidebar and basic chat
 - [x] Stage 3: Streaming and abort
 - [x] Stage 4: Current note and selection context
-- [ ] Stage 5: Editing commands
+- [x] Stage 5: Editing commands
 - [ ] Stage 6: Chat history persistence
 - [ ] Stage 7: Vault search context
 - [ ] Stage 8: Embedding retrieval
@@ -449,7 +449,7 @@ Disabling selection or current file context in settings prevents that context ty
 
 ## Stage 5: Editing Commands
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -461,6 +461,65 @@ Add Obsidian-native writing commands.
 - Rewrite selection.
 - Summarize current note.
 - Insert or replace editor text with explicit user action.
+
+### Files
+
+- `src/main.ts`
+- `src/commands/EditingCommandService.ts`
+- `src/commands/EditingCommandService.test.ts`
+- `src/commands/registerCommands.ts`
+- `src/obsidian/EditorAdapter.ts`
+- `src/obsidian/EditorAdapter.test.ts`
+- `src/prompts/commandPrompts.ts`
+- `src/prompts/PromptComposer.ts`
+- `src/prompts/PromptComposer.test.ts`
+- `docs/stage-status.md`
+
+### Completion Criteria
+
+- Command palette includes `Ask Copilot: Explain Selection`.
+- Command palette includes `Ask Copilot: Rewrite Selection`.
+- Command palette includes `Ask Copilot: Summarize Current Note`.
+- Selection commands require active selected editor text.
+- Explain selection inserts the generated explanation through the editor adapter.
+- Rewrite selection replaces the current selection through the editor adapter.
+- Summarize current note inserts the generated summary through the editor adapter.
+- Editing command prompts are composed separately from provider execution.
+- Editing command behavior is covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can run `Ask Copilot: Explain Selection` from the command palette when text is selected.
+Running `Ask Copilot: Explain Selection` inserts an explanation into the active editor.
+Running `Ask Copilot: Rewrite Selection` replaces the selected text with the rewritten result.
+Running `Ask Copilot: Summarize Current Note` inserts a summary into the active editor.
+Running a selection command without selected text shows a Notice and does not call the provider.
+Provider failures show a Notice and do not write generated text.
+```
+
+### Notes
+
+- Stage 5 uses explicit command palette actions as the user confirmation boundary for editor writes.
+- Provider calls still go through the provider abstraction and receive composed prompts.
+- Editor writes are centralized through `EditorAdapter`.
+- Stage 5 does not add autonomous note-writing tools, diff previews, chat persistence, vault search, or agent mode.
+- Automated verification passed on 2026-07-09.
 
 ## Stage 6: Chat History Persistence
 

@@ -29,4 +29,25 @@ describe("PromptComposer", () => {
     expect(messages[2]?.content).toContain("Selected text");
     expect(messages[2]?.content).toContain("User request:\nWhat does this mean?");
   });
+
+  it("adds command instructions for rewrite prompts", () => {
+    const messages = new PromptComposer().compose({
+      mode: "rewrite-selection",
+      userInput: "Rewrite this selection.",
+      history: [],
+      contextBlocks: [
+        {
+          id: "selection",
+          type: "selection",
+          title: "Selection in note.md",
+          content: "Original text",
+          priority: 100,
+          tokenEstimate: 3,
+        },
+      ],
+    });
+
+    expect(messages[1]?.content).toContain("Return only the rewritten text");
+    expect(messages[1]?.content).toContain("Original text");
+  });
 });
