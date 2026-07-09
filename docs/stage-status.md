@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 7
+Current stage: 8
 Current status: completed
 
 ## Project Verification
@@ -41,7 +41,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 5: Editing commands
 - [x] Stage 6: Chat history persistence
 - [x] Stage 7: Vault search context
-- [ ] Stage 8: Embedding retrieval
+- [x] Stage 8: Embedding retrieval
 - [ ] Stage 9: Tools and agent mode
 
 ## Stage 0: Project Scaffold
@@ -676,7 +676,7 @@ Streaming, Stop, chat persistence, and provider errors still behave as before.
 
 ## Stage 8: Embedding Retrieval
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -688,6 +688,79 @@ Add semantic retrieval for larger vaults.
 - Embedding provider.
 - Local vector store.
 - Index refresh on file changes.
+
+### Files
+
+- `src/main.ts`
+- `src/settings/types.ts`
+- `src/settings/defaults.ts`
+- `src/settings/SettingsTab.ts`
+- `src/context/types.ts`
+- `src/context/ContextBuilder.ts`
+- `src/context/SemanticSearchContext.ts`
+- `src/context/SemanticSearchContext.test.ts`
+- `src/retrieval/MarkdownChunker.ts`
+- `src/retrieval/MarkdownChunker.test.ts`
+- `src/retrieval/EmbeddingProvider.ts`
+- `src/retrieval/EmbeddingIndexService.ts`
+- `src/retrieval/EmbeddingIndexService.test.ts`
+- `src/retrieval/VectorStore.ts`
+- `src/retrieval/VectorStore.test.ts`
+- `src/chat/ChatService.ts`
+- `src/chat/ChatService.test.ts`
+- `src/commands/EditingCommandService.ts`
+- `src/commands/EditingCommandService.test.ts`
+- `src/ui/CopilotView.ts`
+- `docs/stage-status.md`
+- `docs/architecture-decisions.md`
+
+### Completion Criteria
+
+- Markdown notes are split into line-aware chunks for semantic indexing.
+- OpenAI-compatible embedding requests are behind a retrieval provider abstraction.
+- Embeddings are stored in a local plugin-data vector store with chunk metadata.
+- Chat context can include semantic retrieval blocks when embedding retrieval is enabled.
+- Semantic search results remain structured `ContextBlock` data and pass through `ContextBudget`.
+- The Copilot sidebar labels semantic retrieval context as Semantic search.
+- Markdown file modify, delete, and rename events refresh or remove affected index entries.
+- Editing commands keep embedding retrieval disabled and remain scoped to explicit editor context.
+- Embedding retrieval behavior is covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat`.
+With embedding retrieval enabled and an embedding model configured, asking about a semantically related topic shows Semantic search in the context preview.
+The preview shows the matching note path and line range.
+Editing or renaming a Markdown note refreshes the semantic index for that note.
+Deleting a Markdown note removes its semantic chunks from the index.
+Disabling embedding retrieval prevents semantic search context from being attached.
+Keyword vault search, selection context, current file context, streaming, Stop, and chat persistence still behave as before.
+```
+
+### Notes
+
+- Embedding retrieval is disabled by default so existing chat behavior does not start making embedding requests unexpectedly.
+- Stage 8 uses the configured OpenAI-compatible base URL and API key with a separate embedding model setting.
+- The vector index is persisted in Obsidian plugin data, not user Markdown notes.
+- Semantic retrieval context has lower priority than selection and current file context and slightly higher priority than keyword vault search.
+- Editing commands explicitly disable semantic retrieval so note-writing commands remain scoped to editor context.
+- Automated verification passed on 2026-07-09.
 
 ## Stage 9: Tools and Agent Mode
 

@@ -1,5 +1,5 @@
-import { Notice, Plugin } from "obsidian";
-import type { WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, TFile } from "obsidian";
+import type { TAbstractFile, WorkspaceLeaf } from "obsidian";
 
 import { ChatService } from "./chat/ChatService";
 import { ChatStore } from "./chat/ChatStore";
@@ -9,13 +9,17 @@ import { registerEditingCommands } from "./commands/registerCommands";
 import { ContextBuilder } from "./context/ContextBuilder";
 import { CurrentFileContext } from "./context/CurrentFileContext";
 import { SelectionContext } from "./context/SelectionContext";
+import { SemanticSearchContext } from "./context/SemanticSearchContext";
 import { VaultSearchContext } from "./context/VaultSearchContext";
 import { CurrentFileAdapter } from "./obsidian/CurrentFileAdapter";
 import { EditorAdapter } from "./obsidian/EditorAdapter";
 import { VaultAdapter } from "./obsidian/VaultAdapter";
 import { WorkspaceAdapter } from "./obsidian/WorkspaceAdapter";
 import { createProvider } from "./providers/ProviderRegistry";
+import { EmbeddingIndexService } from "./retrieval/EmbeddingIndexService";
+import { OpenAICompatibleEmbeddingProvider } from "./retrieval/EmbeddingProvider";
 import { SearchService } from "./retrieval/SearchService";
+import type { PersistedVectorStoreData } from "./retrieval/VectorStore";
 import { normalizeSettings } from "./settings/defaults";
 import { CopilotSettingsTab } from "./settings/SettingsTab";
 import type { CopilotSettings } from "./settings/types";
@@ -25,6 +29,8 @@ export default class ObsidianAICopilotPlugin extends Plugin {
   copilotSettings!: CopilotSettings;
   private chatService!: ChatService;
   private chatData: PersistedChatData | null = null;
+  private embeddingIndexData: PersistedVectorStoreData | null = null;
+  private embeddingIndexService!: EmbeddingIndexService;
 
   override async onload(): Promise<void> {
     await this.loadSettings();
@@ -33,10 +39,25 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     const vaultAdapter = new VaultAdapter(this.app);
     const currentFileAdapter = new CurrentFileAdapter(workspaceAdapter, vaultAdapter);
     const searchService = new SearchService(vaultAdapter);
+    this.embeddingIndexService = new EmbeddingIndexService(
+      vaultAdapter,
+      () =>
+        new OpenAICompatibleEmbeddingProvider({
+          apiKey: this.copilotSettings.apiKey,
+          baseUrl: this.copilotSettings.baseUrl,
+          model: this.copilotSettings.embeddingModel,
+        }),
+      this.embeddingIndexData,
+      async (embeddingIndexData) => {
+        this.embeddingIndexData = embeddingIndexData;
+        await this.savePluginData();
+      },
+    );
     const contextBuilder = new ContextBuilder({
       selection: new SelectionContext(editorAdapter, editorAdapter),
       currentFile: new CurrentFileContext(currentFileAdapter),
       vaultSearch: new VaultSearchContext(searchService),
+      semanticSearch: new SemanticSearchContext(this.embeddingIndexService),
     });
     this.chatService = new ChatService(
       () => this.copilotSettings,
@@ -82,6 +103,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     });
 
     registerEditingCommands(this, editingCommandService);
+    this.registerEmbeddingIndexEvents();
 
     new Notice("Obsidian AI Copilot loaded.");
   }
@@ -95,11 +117,13 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     if (isPluginDataEnvelope(data)) {
       this.copilotSettings = normalizeSettings(data.settings);
       this.chatData = data.chat ?? null;
+      this.embeddingIndexData = data.embeddingIndex ?? null;
       return;
     }
 
     this.copilotSettings = normalizeSettings(data);
     this.chatData = null;
+    this.embeddingIndexData = null;
   }
 
   async saveSettings(): Promise<void> {
@@ -110,7 +134,50 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     await this.saveData({
       settings: this.copilotSettings,
       chat: this.chatService?.getPersistedChatData() ?? this.chatData ?? undefined,
+      embeddingIndex: this.embeddingIndexService?.getPersistedData() ?? this.embeddingIndexData ?? undefined,
     } satisfies CopilotPluginData);
+  }
+
+  private registerEmbeddingIndexEvents(): void {
+    this.registerEvent(
+      this.app.vault.on("modify", (file) => {
+        if (isMarkdownFile(file)) {
+          void this.refreshEmbeddingIndexFile(file);
+        }
+      }),
+    );
+
+    this.registerEvent(
+      this.app.vault.on("delete", (file) => {
+        if (isMarkdownPath(file.path)) {
+          void this.embeddingIndexService.removeFile(file.path);
+        }
+      }),
+    );
+
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        if (isMarkdownPath(oldPath)) {
+          void this.embeddingIndexService.removeFile(oldPath);
+        }
+
+        if (isMarkdownFile(file)) {
+          void this.refreshEmbeddingIndexFile(file);
+        }
+      }),
+    );
+  }
+
+  private async refreshEmbeddingIndexFile(file: TFile): Promise<void> {
+    if (!this.copilotSettings.includeEmbeddingRetrieval) {
+      return;
+    }
+
+    try {
+      await this.embeddingIndexService.refreshFile(file);
+    } catch (error) {
+      console.error("Failed to refresh embedding index:", error);
+    }
   }
 
   private async testProvider(): Promise<void> {
@@ -153,8 +220,17 @@ export default class ObsidianAICopilotPlugin extends Plugin {
 interface CopilotPluginData {
   settings: CopilotSettings;
   chat?: PersistedChatData;
+  embeddingIndex?: PersistedVectorStoreData;
 }
 
 function isPluginDataEnvelope(data: unknown): data is Partial<CopilotPluginData> {
   return typeof data === "object" && data !== null && ("settings" in data || "chat" in data);
+}
+
+function isMarkdownFile(file: TAbstractFile): file is TFile {
+  return file instanceof TFile && file.extension === "md";
+}
+
+function isMarkdownPath(path: string): boolean {
+  return path.toLowerCase().endsWith(".md");
 }

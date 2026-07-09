@@ -7,9 +7,11 @@ export const DEFAULT_SETTINGS: CopilotSettings = {
   model: "gpt-4o-mini",
   temperature: 0.7,
   contextTokenBudget: 4000,
+  embeddingModel: "text-embedding-3-small",
   includeCurrentFile: true,
   includeSelection: true,
   includeVaultSearch: true,
+  includeEmbeddingRetrieval: false,
 };
 
 export function normalizeSettings(data: Partial<CopilotSettings> | null | undefined): CopilotSettings {

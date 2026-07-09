@@ -129,6 +129,7 @@ describe("ChatService", () => {
       includeCurrentFile: DEFAULT_SETTINGS.includeCurrentFile,
       includeSelection: DEFAULT_SETTINGS.includeSelection,
       includeVaultSearch: DEFAULT_SETTINGS.includeVaultSearch,
+      includeEmbeddingRetrieval: DEFAULT_SETTINGS.includeEmbeddingRetrieval,
       tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
       userInput: "Explain this",
     });

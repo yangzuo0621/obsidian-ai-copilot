@@ -205,3 +205,22 @@ The stage goal is simple Vault-wide context, not a retrieval index. On-demand ke
 - Search results are prompt context only; they do not create, edit, or index user notes.
 - Large vault performance may be limited until Stage 8 introduces indexing and embedding retrieval.
 - Editing commands keep vault search disabled and continue to use only explicit editor context.
+
+## ADR-012: Persist the Embedding Index in Plugin Data
+
+Status: Accepted
+
+### Decision
+
+Stage 8 semantic retrieval will store Markdown chunk metadata and embeddings in the plugin data envelope under a separate embedding index section.
+
+### Reason
+
+The embedding index belongs to the plugin and should not create or modify user Markdown notes. Keeping the first local vector store in plugin data reuses the existing persistence path, keeps Stage 8 dependency-free, and allows the index to travel with the rest of the plugin's local state.
+
+### Consequences
+
+- Semantic retrieval can rebuild stale entries from Markdown files when needed.
+- Markdown modify, delete, and rename events update only plugin index data.
+- The index may make plugin data larger for big vaults; a future stage may move the vector store to a separate plugin-owned file if size or performance requires it.
+- Embedding retrieval remains opt-in because indexing can make network requests to the configured embedding provider.
