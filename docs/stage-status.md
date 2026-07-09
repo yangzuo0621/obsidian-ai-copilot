@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 6
+Current stage: 7
 Current status: completed
 
 ## Project Verification
@@ -40,7 +40,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 4: Current note and selection context
 - [x] Stage 5: Editing commands
 - [x] Stage 6: Chat history persistence
-- [ ] Stage 7: Vault search context
+- [x] Stage 7: Vault search context
 - [ ] Stage 8: Embedding retrieval
 - [ ] Stage 9: Tools and agent mode
 
@@ -594,7 +594,7 @@ Streaming, Stop, context preview, and provider errors still behave as before.
 
 ## Stage 7: Vault Search Context
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -606,6 +606,73 @@ Add simple Vault-wide keyword search context.
 - Markdown file scan.
 - Search results as context blocks.
 - Budgeted prompt injection.
+
+### Files
+
+- `src/obsidian/VaultAdapter.ts`
+- `src/retrieval/SearchService.ts`
+- `src/retrieval/SearchService.test.ts`
+- `src/context/types.ts`
+- `src/context/ContextBuilder.ts`
+- `src/context/ContextBuilder.test.ts`
+- `src/context/VaultSearchContext.ts`
+- `src/context/VaultSearchContext.test.ts`
+- `src/chat/ChatService.ts`
+- `src/chat/ChatService.test.ts`
+- `src/commands/EditingCommandService.ts`
+- `src/commands/EditingCommandService.test.ts`
+- `src/settings/types.ts`
+- `src/settings/defaults.ts`
+- `src/settings/SettingsTab.ts`
+- `src/ui/CopilotView.ts`
+- `docs/stage-status.md`
+- `docs/architecture-decisions.md`
+
+### Completion Criteria
+
+- Vault search can be enabled or disabled in settings.
+- Chat messages pass the user's question to the context builder for keyword search.
+- Markdown files are listed and read through `VaultAdapter`.
+- Keyword search matches Markdown file names and note contents.
+- Search results are converted to `vault-search` context blocks with source paths and line ranges.
+- Search results pass through `ContextBudget` before prompt composition.
+- The Copilot sidebar context preview labels search results as Vault search.
+- Vault search behavior is covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat`.
+With vault search enabled, asking about a keyword that appears in another Markdown note shows Vault search in the context preview.
+The preview shows the matching note path and line range.
+Disabling vault search in settings prevents vault search context from being attached.
+Selection and current file context still appear with higher priority when enabled.
+Streaming, Stop, chat persistence, and provider errors still behave as before.
+```
+
+### Notes
+
+- Stage 7 uses read-only Markdown scanning through Obsidian's `getMarkdownFiles()` and `cachedRead()`.
+- Search is keyword-based over file names and note contents; semantic retrieval remains deferred to Stage 8.
+- Vault search context is lower priority than selection and current file context and is clipped by the existing context budget.
+- Editing commands explicitly disable vault search so note-writing commands remain scoped to editor context.
+- Automated verification passed on 2026-07-09.
+- Local test vault deployment passed on 2026-07-09.
 
 ## Stage 8: Embedding Retrieval
 

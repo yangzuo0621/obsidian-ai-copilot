@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: CopilotSettings = {
   contextTokenBudget: 4000,
   includeCurrentFile: true,
   includeSelection: true,
+  includeVaultSearch: true,
 };
 
 export function normalizeSettings(data: Partial<CopilotSettings> | null | undefined): CopilotSettings {

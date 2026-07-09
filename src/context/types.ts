@@ -25,11 +25,17 @@ export interface ContextBlockSummary {
 export interface ContextBuildOptions {
   includeCurrentFile: boolean;
   includeSelection: boolean;
+  includeVaultSearch: boolean;
   tokenBudget: number;
+  userInput: string;
 }
 
 export interface ContextSource {
   collect(): Promise<ContextBlock | null>;
+}
+
+export interface QueryContextSource {
+  collect(query: string): Promise<ContextBlock[]>;
 }
 
 export function summarizeContextBlock(block: ContextBlock): ContextBlockSummary {

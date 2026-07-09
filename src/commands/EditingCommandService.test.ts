@@ -55,7 +55,9 @@ describe("EditingCommandService", () => {
     expect(contextBuilder.build).toHaveBeenCalledWith({
       includeCurrentFile: false,
       includeSelection: true,
+      includeVaultSearch: false,
       tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
+      userInput: "Explain this selection.",
     });
     expect(providerComplete.mock.calls[0]?.[0].messages.at(-1)?.content).toContain("Explain the selected text");
     expect(editorAdapter.insertAtCursor).toHaveBeenCalledWith("\n\nAI explanation:\nThis explains it.\n", undefined);
@@ -90,7 +92,9 @@ describe("EditingCommandService", () => {
     expect(contextBuilder.build).toHaveBeenCalledWith({
       includeCurrentFile: true,
       includeSelection: false,
+      includeVaultSearch: false,
       tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
+      userInput: "Summarize the current note.",
     });
     expect(editorAdapter.insertAtCursor).toHaveBeenCalledWith("\n\nAI summary:\nShort summary.\n", undefined);
   });

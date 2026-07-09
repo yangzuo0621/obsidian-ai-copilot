@@ -106,24 +106,32 @@ describe("ChatService", () => {
       callbacks.onToken("Contextual answer");
       callbacks.onDone();
     });
+    const buildContext = vi.fn(async () => [
+      {
+        id: "selection",
+        type: "selection" as const,
+        title: "Selection in note.md",
+        content: "Selected text",
+        priority: 100,
+        tokenEstimate: 3,
+        sourcePath: "note.md",
+        lineStart: 2,
+        lineEnd: 4,
+      },
+    ]);
     const service = new ChatService(() => DEFAULT_SETTINGS, {
-      build: async () => [
-        {
-          id: "selection",
-          type: "selection",
-          title: "Selection in note.md",
-          content: "Selected text",
-          priority: 100,
-          tokenEstimate: 3,
-          sourcePath: "note.md",
-          lineStart: 2,
-          lineEnd: 4,
-        },
-      ],
+      build: buildContext,
     });
 
     await service.sendMessage("Explain this");
 
+    expect(buildContext).toHaveBeenCalledWith({
+      includeCurrentFile: DEFAULT_SETTINGS.includeCurrentFile,
+      includeSelection: DEFAULT_SETTINGS.includeSelection,
+      includeVaultSearch: DEFAULT_SETTINGS.includeVaultSearch,
+      tokenBudget: DEFAULT_SETTINGS.contextTokenBudget,
+      userInput: "Explain this",
+    });
     expect(providerStream.mock.calls[0]?.[0].messages.at(-1)).toEqual({
       role: "user",
       content: expect.stringContaining("Selected text"),

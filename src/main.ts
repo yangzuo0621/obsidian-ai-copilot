@@ -9,11 +9,13 @@ import { registerEditingCommands } from "./commands/registerCommands";
 import { ContextBuilder } from "./context/ContextBuilder";
 import { CurrentFileContext } from "./context/CurrentFileContext";
 import { SelectionContext } from "./context/SelectionContext";
+import { VaultSearchContext } from "./context/VaultSearchContext";
 import { CurrentFileAdapter } from "./obsidian/CurrentFileAdapter";
 import { EditorAdapter } from "./obsidian/EditorAdapter";
 import { VaultAdapter } from "./obsidian/VaultAdapter";
 import { WorkspaceAdapter } from "./obsidian/WorkspaceAdapter";
 import { createProvider } from "./providers/ProviderRegistry";
+import { SearchService } from "./retrieval/SearchService";
 import { normalizeSettings } from "./settings/defaults";
 import { CopilotSettingsTab } from "./settings/SettingsTab";
 import type { CopilotSettings } from "./settings/types";
@@ -30,9 +32,11 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     const editorAdapter = new EditorAdapter(workspaceAdapter);
     const vaultAdapter = new VaultAdapter(this.app);
     const currentFileAdapter = new CurrentFileAdapter(workspaceAdapter, vaultAdapter);
+    const searchService = new SearchService(vaultAdapter);
     const contextBuilder = new ContextBuilder({
       selection: new SelectionContext(editorAdapter, editorAdapter),
       currentFile: new CurrentFileContext(currentFileAdapter),
+      vaultSearch: new VaultSearchContext(searchService),
     });
     this.chatService = new ChatService(
       () => this.copilotSettings,

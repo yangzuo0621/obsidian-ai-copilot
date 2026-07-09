@@ -214,7 +214,7 @@ export class CopilotView extends ItemView {
     const blockEl = parentEl.createDiv({ cls: "obsidian-ai-copilot-context-block" });
     blockEl.createSpan({
       cls: "obsidian-ai-copilot-context-type",
-      text: block.type === "selection" ? "Selection" : "Current file",
+      text: this.formatContextType(block),
     });
     blockEl.createSpan({
       cls: "obsidian-ai-copilot-context-title",
@@ -239,6 +239,22 @@ export class CopilotView extends ItemView {
     }
 
     return block.lineStart === block.lineEnd ? `Line ${block.lineStart}` : `Lines ${block.lineStart}-${block.lineEnd}`;
+  }
+
+  private formatContextType(block: ContextBlockSummary): string {
+    if (block.type === "selection") {
+      return "Selection";
+    }
+
+    if (block.type === "current-file") {
+      return "Current file";
+    }
+
+    if (block.type === "vault-search") {
+      return "Vault search";
+    }
+
+    return "Context";
   }
 
   private renderMessage(message: ChatMessageRecord): void {

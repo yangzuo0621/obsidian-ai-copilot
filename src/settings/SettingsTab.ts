@@ -104,5 +104,15 @@ export class CopilotSettingsTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         });
       });
+
+    new Setting(containerEl)
+      .setName("Include vault search")
+      .setDesc("Search Markdown notes for keywords from your question and include matching snippets as context.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.copilotSettings.includeVaultSearch).onChange(async (value) => {
+          this.plugin.copilotSettings.includeVaultSearch = value;
+          await this.plugin.saveSettings();
+        });
+      });
   }
 }
