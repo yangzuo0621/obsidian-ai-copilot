@@ -2,6 +2,8 @@ import { Notice, Plugin } from "obsidian";
 import type { WorkspaceLeaf } from "obsidian";
 
 import { ChatService } from "./chat/ChatService";
+import { ChatStore } from "./chat/ChatStore";
+import type { PersistedChatData } from "./chat/types";
 import { EditingCommandService } from "./commands/EditingCommandService";
 import { registerEditingCommands } from "./commands/registerCommands";
 import { ContextBuilder } from "./context/ContextBuilder";
@@ -20,6 +22,7 @@ import { COPILOT_VIEW_TYPE, CopilotView } from "./ui/CopilotView";
 export default class ObsidianAICopilotPlugin extends Plugin {
   copilotSettings!: CopilotSettings;
   private chatService!: ChatService;
+  private chatData: PersistedChatData | null = null;
 
   override async onload(): Promise<void> {
     await this.loadSettings();
@@ -31,7 +34,15 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       selection: new SelectionContext(editorAdapter, editorAdapter),
       currentFile: new CurrentFileContext(currentFileAdapter),
     });
-    this.chatService = new ChatService(() => this.copilotSettings, contextBuilder);
+    this.chatService = new ChatService(
+      () => this.copilotSettings,
+      contextBuilder,
+      new ChatStore(this.chatData),
+      async (chatData) => {
+        this.chatData = chatData;
+        await this.savePluginData();
+      },
+    );
     const editingCommandService = new EditingCommandService(() => this.copilotSettings, contextBuilder, editorAdapter);
 
     this.registerView(COPILOT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CopilotView(leaf, this.chatService));
@@ -76,12 +87,26 @@ export default class ObsidianAICopilotPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data = (await this.loadData()) as Partial<CopilotSettings> | null;
+    const data = (await this.loadData()) as Partial<CopilotPluginData & CopilotSettings> | null;
+    if (isPluginDataEnvelope(data)) {
+      this.copilotSettings = normalizeSettings(data.settings);
+      this.chatData = data.chat ?? null;
+      return;
+    }
+
     this.copilotSettings = normalizeSettings(data);
+    this.chatData = null;
   }
 
   async saveSettings(): Promise<void> {
-    await this.saveData(this.copilotSettings);
+    await this.savePluginData();
+  }
+
+  private async savePluginData(): Promise<void> {
+    await this.saveData({
+      settings: this.copilotSettings,
+      chat: this.chatService?.getPersistedChatData() ?? this.chatData ?? undefined,
+    } satisfies CopilotPluginData);
   }
 
   private async testProvider(): Promise<void> {
@@ -119,4 +144,13 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       new Notice(`Failed to open AI Copilot: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+}
+
+interface CopilotPluginData {
+  settings: CopilotSettings;
+  chat?: PersistedChatData;
+}
+
+function isPluginDataEnvelope(data: unknown): data is Partial<CopilotPluginData> {
+  return typeof data === "object" && data !== null && ("settings" in data || "chat" in data);
 }

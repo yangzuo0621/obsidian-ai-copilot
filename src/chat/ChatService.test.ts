@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../settings/defaults";
 
 import { ChatService } from "./ChatService";
+import { ChatStore } from "./ChatStore";
 import type { ChatState } from "./types";
 
 const providerStream = vi.hoisted(() => vi.fn());
@@ -35,6 +36,12 @@ describe("ChatService", () => {
         title: "New chat",
         messages: [],
       },
+      sessions: [
+        {
+          title: "New chat",
+          messageCount: 0,
+        },
+      ],
     });
   });
 
@@ -194,5 +201,68 @@ describe("ChatService", () => {
         ],
       },
     });
+  });
+
+  it("persists chat data after a completed response", async () => {
+    providerStream.mockImplementation(async (_request, callbacks) => {
+      callbacks.onToken("Saved");
+      callbacks.onDone();
+    });
+    const saveChatData = vi.fn().mockResolvedValue(undefined);
+    const service = new ChatService(() => DEFAULT_SETTINGS, undefined, new ChatStore(), saveChatData);
+
+    await service.sendMessage("Remember this");
+
+    expect(saveChatData).toHaveBeenCalledWith({
+      activeSessionId: service.getState().activeSessionId,
+      sessions: [
+        expect.objectContaining({
+          title: "Remember this",
+          messages: [
+            expect.objectContaining({ role: "user", content: "Remember this" }),
+            expect.objectContaining({ role: "assistant", content: "Saved", status: "done" }),
+          ],
+        }),
+      ],
+    });
+  });
+
+  it("creates, switches, and deletes sessions", async () => {
+    const saveChatData = vi.fn().mockResolvedValue(undefined);
+    const service = new ChatService(() => DEFAULT_SETTINGS, undefined, new ChatStore(), saveChatData);
+    const firstSessionId = service.getState().activeSessionId;
+
+    await service.createSession();
+    const secondSessionId = service.getState().activeSessionId;
+
+    expect(secondSessionId).not.toBe(firstSessionId);
+    expect(service.getState().sessions).toHaveLength(2);
+
+    await service.switchSession(firstSessionId);
+    expect(service.getState().activeSessionId).toBe(firstSessionId);
+
+    await service.deleteSession(firstSessionId);
+    expect(service.getState().activeSessionId).toBe(secondSessionId);
+    expect(service.getState().sessions).toHaveLength(1);
+    expect(saveChatData).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps session histories isolated when switching sessions", async () => {
+    providerStream.mockImplementation(async (_request, callbacks) => {
+      callbacks.onToken("Reply");
+      callbacks.onDone();
+    });
+    const service = new ChatService(() => DEFAULT_SETTINGS);
+    const firstSessionId = service.getState().activeSessionId;
+
+    await service.sendMessage("First session");
+    await service.createSession();
+    await service.sendMessage("Second session");
+
+    expect(service.getState().session.messages[0]?.content).toBe("Second session");
+
+    await service.switchSession(firstSessionId);
+
+    expect(service.getState().session.messages[0]?.content).toBe("First session");
   });
 });

@@ -167,3 +167,22 @@ The codebase now has enough modules, tests, docs, and configuration files that f
 - `npm run format:check` verifies formatting without writing files.
 - `npm run verify` runs format checks, lint, build, and unit tests.
 - Formatting-only changes should stay separate from feature work whenever possible.
+
+## ADR-010: Persist Chat History in Plugin Data
+
+Status: Accepted
+
+### Decision
+
+Chat sessions, the active session id, and message records will be persisted in Obsidian plugin data together with settings under a structured data envelope.
+
+### Reason
+
+Chat history belongs to the plugin rather than to user notes. Keeping it in plugin data avoids creating or modifying vault Markdown files, preserves the existing settings storage path, and makes session restore available after plugin reload.
+
+### Consequences
+
+- Plugin data uses separate `settings` and `chat` sections so saving one does not overwrite the other.
+- Legacy flat settings data remains readable and is migrated to the envelope on the next save.
+- Deleting a chat session removes only saved plugin chat history and does not touch vault content.
+- Future persistence changes must preserve settings and chat data independently.

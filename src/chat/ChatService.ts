@@ -6,10 +6,12 @@ import { PromptComposer } from "../prompts/PromptComposer";
 import type { CopilotSettings } from "../settings/types";
 import { StreamController } from "../streaming/StreamController";
 
-import { createChatMessageRecord, createChatSession, updateSessionTitle } from "./ChatSession";
-import type { ChatSession, ChatState } from "./types";
+import { createChatMessageRecord, updateSessionTitle } from "./ChatSession";
+import { ChatStore } from "./ChatStore";
+import type { ChatSession, ChatState, PersistedChatData } from "./types";
 
 type ChatStateListener = (state: ChatState) => void;
+type SaveChatData = (data: PersistedChatData) => Promise<void>;
 
 interface ContextBuilderLike {
   build(options: {
@@ -20,28 +22,36 @@ interface ContextBuilderLike {
 }
 
 export class ChatService {
-  private readonly session: ChatSession = createChatSession();
   private readonly listeners = new Set<ChatStateListener>();
   private readonly streamController = new StreamController();
   private readonly promptComposer = new PromptComposer();
-  private lastContextBlocks: ContextBlock[] = [];
   private activeRequestId: string | null = null;
   private isSending = false;
 
   constructor(
     private readonly getSettings: () => CopilotSettings,
     private readonly contextBuilder?: ContextBuilderLike,
+    private readonly chatStore = new ChatStore(),
+    private readonly saveChatData?: SaveChatData,
   ) {}
 
   getState(): ChatState {
+    const session = this.chatStore.getActiveSession();
+
     return {
       session: {
-        ...this.session,
-        messages: this.session.messages.map((message) => ({ ...message })),
+        ...session,
+        messages: session.messages.map((message) => ({ ...message })),
       },
+      sessions: this.chatStore.getSessions(),
+      activeSessionId: this.chatStore.getActiveSessionId(),
       isSending: this.isSending,
-      contextBlocks: this.lastContextBlocks.map(summarizeContextBlock),
+      contextBlocks: this.getLatestContextBlocks(session),
     };
+  }
+
+  getPersistedChatData(): PersistedChatData {
+    return this.chatStore.toJSON();
   }
 
   subscribe(listener: ChatStateListener): () => void {
@@ -59,12 +69,13 @@ export class ChatService {
       return;
     }
 
+    const session = this.chatStore.getActiveSession();
+    const sessionId = session.id;
     const userMessage = createChatMessageRecord("user", content);
     const assistantMessage = createChatMessageRecord("assistant", "", "pending");
 
-    this.session.messages.push(userMessage, assistantMessage);
-    updateSessionTitle(this.session);
-    this.session.updatedAt = Date.now();
+    this.chatStore.appendMessages(sessionId, [userMessage, assistantMessage]);
+    updateSessionTitle(session);
     this.isSending = true;
     this.activeRequestId = assistantMessage.id;
     this.notify();
@@ -72,7 +83,6 @@ export class ChatService {
     try {
       const settings = this.getSettings();
       const contextBlocks = await this.buildContextBlocks(settings);
-      this.lastContextBlocks = contextBlocks;
       userMessage.contextBlocks = contextBlocks.map(summarizeContextBlock);
       const provider = createProvider(settings);
       assistantMessage.status = "streaming";
@@ -84,7 +94,7 @@ export class ChatService {
         request: {
           model: settings.model,
           temperature: settings.temperature,
-          messages: this.buildProviderMessages(userMessage.id, contextBlocks),
+          messages: this.buildProviderMessages(session, userMessage.id, contextBlocks),
         },
         callbacks: {
           onToken: (token) => {
@@ -92,10 +102,11 @@ export class ChatService {
               return;
             }
 
-            assistantMessage.content += token;
-            assistantMessage.status = "streaming";
-            assistantMessage.error = undefined;
-            this.session.updatedAt = Date.now();
+            this.chatStore.updateMessage(sessionId, assistantMessage.id, (message) => {
+              message.content += token;
+              message.status = "streaming";
+              message.error = undefined;
+            });
             this.notify();
           },
           onDone: () => {
@@ -103,9 +114,10 @@ export class ChatService {
               return;
             }
 
-            assistantMessage.status = "done";
-            assistantMessage.error = undefined;
-            this.session.updatedAt = Date.now();
+            this.chatStore.updateMessage(sessionId, assistantMessage.id, (message) => {
+              message.status = "done";
+              message.error = undefined;
+            });
             this.notify();
           },
           onAbort: () => {
@@ -113,10 +125,11 @@ export class ChatService {
               return;
             }
 
-            assistantMessage.status = "aborted";
-            assistantMessage.content = assistantMessage.content || "Generation stopped.";
-            assistantMessage.error = undefined;
-            this.session.updatedAt = Date.now();
+            this.chatStore.updateMessage(sessionId, assistantMessage.id, (message) => {
+              message.status = "aborted";
+              message.content = message.content || "Generation stopped.";
+              message.error = undefined;
+            });
             this.notify();
           },
           onError: (error) => {
@@ -124,22 +137,26 @@ export class ChatService {
               return;
             }
 
-            assistantMessage.content = assistantMessage.content || "The provider request failed.";
-            assistantMessage.status = "error";
-            assistantMessage.error = error instanceof Error ? error.message : String(error);
-            this.session.updatedAt = Date.now();
+            this.chatStore.updateMessage(sessionId, assistantMessage.id, (message) => {
+              message.content = message.content || "The provider request failed.";
+              message.status = "error";
+              message.error = error instanceof Error ? error.message : String(error);
+            });
             this.notify();
           },
         },
       });
     } catch (error) {
-      assistantMessage.content = "The provider request failed.";
-      assistantMessage.status = "error";
-      assistantMessage.error = error instanceof Error ? error.message : String(error);
+      this.chatStore.updateMessage(sessionId, assistantMessage.id, (message) => {
+        message.content = "The provider request failed.";
+        message.status = "error";
+        message.error = error instanceof Error ? error.message : String(error);
+      });
     } finally {
       this.isSending = false;
       this.activeRequestId = null;
-      this.session.updatedAt = Date.now();
+      this.chatStore.touchSession(sessionId);
+      await this.persistChatData();
       this.notify();
     }
   }
@@ -150,6 +167,34 @@ export class ChatService {
     }
 
     this.streamController.abort(this.activeRequestId);
+  }
+
+  async createSession(): Promise<void> {
+    if (this.isSending) {
+      return;
+    }
+
+    this.chatStore.createSession();
+    await this.persistChatData();
+    this.notify();
+  }
+
+  async switchSession(sessionId: string): Promise<void> {
+    if (this.isSending || !this.chatStore.switchSession(sessionId)) {
+      return;
+    }
+
+    await this.persistChatData();
+    this.notify();
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    if (this.isSending || !this.chatStore.deleteSession(sessionId)) {
+      return;
+    }
+
+    await this.persistChatData();
+    this.notify();
   }
 
   private async buildContextBlocks(settings: CopilotSettings): Promise<ContextBlock[]> {
@@ -164,9 +209,13 @@ export class ChatService {
     });
   }
 
-  private buildProviderMessages(currentUserMessageId: string, contextBlocks: ContextBlock[]): ChatMessage[] {
-    const currentUserMessage = this.session.messages.find((message) => message.id === currentUserMessageId);
-    const history = this.session.messages
+  private buildProviderMessages(
+    session: ChatSession,
+    currentUserMessageId: string,
+    contextBlocks: ContextBlock[],
+  ): ChatMessage[] {
+    const currentUserMessage = session.messages.find((message) => message.id === currentUserMessageId);
+    const history = session.messages
       .filter((message) => message.id !== currentUserMessageId)
       .filter((message) => message.status === "done")
       .map((message) => ({
@@ -179,6 +228,15 @@ export class ChatService {
       contextBlocks,
       history,
     });
+  }
+
+  private getLatestContextBlocks(session: ChatSession) {
+    const message = [...session.messages].reverse().find((candidate) => candidate.contextBlocks);
+    return message?.contextBlocks ?? [];
+  }
+
+  private async persistChatData(): Promise<void> {
+    await this.saveChatData?.(this.chatStore.toJSON());
   }
 
   private notify(): void {

@@ -10,6 +10,9 @@ export const COPILOT_VIEW_TYPE = "obsidian-ai-copilot-view";
 export class CopilotView extends ItemView {
   private rootEl!: HTMLElement;
   private titleEl!: HTMLElement;
+  private sessionSelectEl!: HTMLSelectElement;
+  private newSessionButtonEl!: HTMLButtonElement;
+  private deleteSessionButtonEl!: HTMLButtonElement;
   private contextPreviewEl!: HTMLElement;
   private messageListEl!: HTMLElement;
   private textareaEl!: HTMLTextAreaElement;
@@ -72,6 +75,21 @@ export class CopilotView extends ItemView {
     const headerEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-header" });
     headerEl.createDiv({ cls: "obsidian-ai-copilot-heading", text: "AI Copilot" });
     this.titleEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-title" });
+    const sessionControlsEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-controls" });
+    this.sessionSelectEl = sessionControlsEl.createEl("select", {
+      cls: "obsidian-ai-copilot-session-select",
+      attr: {
+        "aria-label": "Chat session",
+      },
+    });
+    this.newSessionButtonEl = sessionControlsEl.createEl("button", {
+      cls: "obsidian-ai-copilot-session-new",
+      text: "New",
+    });
+    this.deleteSessionButtonEl = sessionControlsEl.createEl("button", {
+      cls: "obsidian-ai-copilot-session-delete",
+      text: "Delete",
+    });
     this.contextPreviewEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-context-preview" });
 
     this.messageListEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-messages" });
@@ -101,6 +119,26 @@ export class CopilotView extends ItemView {
       this.chatService.stopGeneration();
     });
 
+    this.registerDomEvent(this.sessionSelectEl, "change", () => {
+      void this.chatService.switchSession(this.sessionSelectEl.value);
+    });
+
+    this.registerDomEvent(this.newSessionButtonEl, "click", () => {
+      void this.chatService.createSession();
+    });
+
+    this.registerDomEvent(this.deleteSessionButtonEl, "click", () => {
+      const state = this.currentState;
+      if (!state) {
+        return;
+      }
+
+      const shouldDelete = confirm(`Delete "${state.session.title}"? This only removes the saved chat history.`);
+      if (shouldDelete) {
+        void this.chatService.deleteSession(state.activeSessionId);
+      }
+    });
+
     this.registerDomEvent(this.textareaEl, "keydown", (event: KeyboardEvent) => {
       if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
@@ -115,6 +153,7 @@ export class CopilotView extends ItemView {
 
   private render(state: ChatState): void {
     this.titleEl.setText(state.session.title);
+    this.renderSessionControls(state);
     this.renderContextPreview(state.contextBlocks);
     this.messageListEl.empty();
 
@@ -131,6 +170,22 @@ export class CopilotView extends ItemView {
 
     this.updateComposerState();
     this.messageListEl.scrollTop = this.messageListEl.scrollHeight;
+  }
+
+  private renderSessionControls(state: ChatState): void {
+    this.sessionSelectEl.empty();
+
+    for (const session of state.sessions) {
+      const optionEl = this.sessionSelectEl.createEl("option", {
+        text: `${session.title} (${Math.floor(session.messageCount / 2)})`,
+        value: session.id,
+      });
+      optionEl.selected = session.id === state.activeSessionId;
+    }
+
+    this.sessionSelectEl.disabled = state.isSending;
+    this.newSessionButtonEl.disabled = state.isSending;
+    this.deleteSessionButtonEl.disabled = state.isSending;
   }
 
   private renderContextPreview(contextBlocks: ContextBlockSummary[]): void {
@@ -240,6 +295,9 @@ export class CopilotView extends ItemView {
     const hasInput = this.textareaEl.value.trim().length > 0;
 
     this.textareaEl.disabled = isSending;
+    this.sessionSelectEl.disabled = isSending;
+    this.newSessionButtonEl.disabled = isSending;
+    this.deleteSessionButtonEl.disabled = isSending;
     this.sendButtonEl.disabled = isSending || !hasInput;
     this.sendButtonEl.setText(isSending ? "Sending..." : "Send");
     this.stopButtonEl.disabled = !isSending;
