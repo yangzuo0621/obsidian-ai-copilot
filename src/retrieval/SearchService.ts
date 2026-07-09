@@ -59,6 +59,7 @@ const STOP_WORDS = new Set([
   "在",
   "吗",
 ]);
+const CJK_STOP_TERMS = new Set(["一下", "关于", "内容", "总结", "有关", "帮我"]);
 
 export class SearchService {
   constructor(private readonly files: MarkdownFileReader) {}
@@ -88,7 +89,8 @@ export class SearchService {
 export function extractSearchTerms(query: string): string[] {
   const seen = new Set<string>();
   const terms: string[] = [];
-  const matches = query.toLowerCase().match(/[\p{L}\p{N}_-]+/gu) ?? [];
+  const latinTerms = query.toLowerCase().match(/[a-z0-9][a-z0-9_-]*/g) ?? [];
+  const matches = latinTerms.length > 0 ? latinTerms : extractCjkSearchTerms(query);
 
   for (const match of matches) {
     const term = match.trim();
@@ -100,6 +102,26 @@ export function extractSearchTerms(query: string): string[] {
     terms.push(term);
     if (terms.length >= MAX_QUERY_TERMS) {
       break;
+    }
+  }
+
+  return terms;
+}
+
+function extractCjkSearchTerms(query: string): string[] {
+  const terms: string[] = [];
+  const runs = query.match(/\p{Script=Han}+/gu) ?? [];
+
+  for (const run of runs) {
+    if (run.length < MIN_TERM_LENGTH) {
+      continue;
+    }
+
+    for (let index = 0; index <= run.length - MIN_TERM_LENGTH; index += 1) {
+      const term = run.slice(index, index + MIN_TERM_LENGTH);
+      if (!CJK_STOP_TERMS.has(term)) {
+        terms.push(term);
+      }
     }
   }
 

@@ -13,6 +13,14 @@ describe("SearchService", () => {
     ]);
   });
 
+  it("extracts latin keywords from mixed Chinese and English questions", () => {
+    expect(extractSearchTerms("总结一下有关swim的内容")).toEqual(["swim"]);
+  });
+
+  it("extracts Chinese keyword pairs when no latin keywords are present", () => {
+    expect(extractSearchTerms("总结一下有关游泳的内容")).toContain("游泳");
+  });
+
   it("searches markdown filenames and content snippets", async () => {
     const files = [createFile("Projects/Streaming.md", "Streaming"), createFile("Daily/Today.md", "Today")];
     const reader = {
