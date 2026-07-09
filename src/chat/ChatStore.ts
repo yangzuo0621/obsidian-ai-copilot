@@ -180,7 +180,7 @@ function normalizeMessage(value: unknown): ChatMessageRecord | null {
     return null;
   }
 
-  const status =
+  const restoredStatus =
     value.status === "pending" ||
     value.status === "streaming" ||
     value.status === "done" ||
@@ -188,11 +188,14 @@ function normalizeMessage(value: unknown): ChatMessageRecord | null {
     value.status === "error"
       ? value.status
       : "done";
+  const status = restoredStatus === "pending" || restoredStatus === "streaming" ? "aborted" : restoredStatus;
+  const content =
+    status === "aborted" && value.content.length === 0 ? "Generation interrupted by plugin reload." : value.content;
 
   return {
     id: value.id,
     role: value.role,
-    content: value.content,
+    content,
     createdAt: typeof value.createdAt === "number" ? value.createdAt : Date.now(),
     status,
     error: typeof value.error === "string" ? value.error : undefined,

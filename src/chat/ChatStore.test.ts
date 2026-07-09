@@ -120,11 +120,41 @@ describe("ChatStore", () => {
           id: "message-valid",
           role: "assistant",
           content: "Restored",
-          status: "streaming",
+          status: "aborted",
         },
       ],
     });
 
     vi.restoreAllMocks();
+  });
+
+  it("marks restored empty in-flight assistant messages as interrupted", () => {
+    const data = normalizeChatData({
+      activeSessionId: "session-valid",
+      sessions: [
+        {
+          id: "session-valid",
+          title: "Interrupted",
+          messages: [
+            {
+              id: "message-pending",
+              role: "assistant",
+              content: "",
+              createdAt: 100,
+              status: "pending",
+            },
+          ],
+          createdAt: 100,
+          updatedAt: 200,
+        },
+      ],
+    });
+
+    expect(data.sessions[0]?.messages[0]).toMatchObject({
+      id: "message-pending",
+      role: "assistant",
+      content: "Generation interrupted by plugin reload.",
+      status: "aborted",
+    });
   });
 });
