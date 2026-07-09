@@ -60,6 +60,11 @@ const STOP_WORDS = new Set([
   "吗",
 ]);
 const CJK_STOP_TERMS = new Set(["一下", "关于", "内容", "总结", "有关", "帮我"]);
+const SEARCH_ALIASES = new Map<string, string[]>([
+  ["swim", ["swimming", "游泳"]],
+  ["swimming", ["swim", "游泳"]],
+  ["游泳", ["swim", "swimming"]],
+]);
 
 export class SearchService {
   constructor(private readonly files: MarkdownFileReader) {}
@@ -98,14 +103,34 @@ export function extractSearchTerms(query: string): string[] {
       continue;
     }
 
-    seen.add(term);
-    terms.push(term);
+    addSearchTerm(term, terms, seen);
     if (terms.length >= MAX_QUERY_TERMS) {
       break;
     }
   }
 
   return terms;
+}
+
+function addSearchTerm(term: string, terms: string[], seen: Set<string>): void {
+  addSingleSearchTerm(term, terms, seen);
+
+  for (const alias of SEARCH_ALIASES.get(term) ?? []) {
+    if (terms.length >= MAX_QUERY_TERMS) {
+      return;
+    }
+
+    addSingleSearchTerm(alias, terms, seen);
+  }
+}
+
+function addSingleSearchTerm(term: string, terms: string[], seen: Set<string>): void {
+  if (seen.has(term)) {
+    return;
+  }
+
+  seen.add(term);
+  terms.push(term);
 }
 
 function extractCjkSearchTerms(query: string): string[] {
