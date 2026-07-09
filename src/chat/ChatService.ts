@@ -17,7 +17,9 @@ interface ContextBuilderLike {
   build(options: {
     includeCurrentFile: boolean;
     includeSelection: boolean;
+    includeVaultSearch: boolean;
     tokenBudget: number;
+    userInput: string;
   }): Promise<ContextBlock[]>;
 }
 
@@ -82,7 +84,7 @@ export class ChatService {
 
     try {
       const settings = this.getSettings();
-      const contextBlocks = await this.buildContextBlocks(settings);
+      const contextBlocks = await this.buildContextBlocks(settings, content);
       userMessage.contextBlocks = contextBlocks.map(summarizeContextBlock);
       const provider = createProvider(settings);
       assistantMessage.status = "streaming";
@@ -197,7 +199,7 @@ export class ChatService {
     this.notify();
   }
 
-  private async buildContextBlocks(settings: CopilotSettings): Promise<ContextBlock[]> {
+  private async buildContextBlocks(settings: CopilotSettings, userInput: string): Promise<ContextBlock[]> {
     if (!this.contextBuilder) {
       return [];
     }
@@ -205,7 +207,9 @@ export class ChatService {
     return this.contextBuilder.build({
       includeCurrentFile: settings.includeCurrentFile,
       includeSelection: settings.includeSelection,
+      includeVaultSearch: settings.includeVaultSearch,
       tokenBudget: settings.contextTokenBudget,
+      userInput,
     });
   }
 

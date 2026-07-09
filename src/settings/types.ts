@@ -7,4 +7,5 @@ export interface CopilotSettings {
   contextTokenBudget: number;
   includeCurrentFile: boolean;
   includeSelection: boolean;
+  includeVaultSearch: boolean;
 }

@@ -11,7 +11,9 @@ interface ContextBuilderLike {
   build(options: {
     includeCurrentFile: boolean;
     includeSelection: boolean;
+    includeVaultSearch: boolean;
     tokenBudget: number;
+    userInput: string;
   }): Promise<ContextBlock[]>;
 }
 
@@ -94,7 +96,9 @@ export class EditingCommandService {
     const settings = this.getSettings();
     const contextBlocks = await this.contextBuilder.build({
       ...contextOptions,
+      includeVaultSearch: false,
       tokenBudget: settings.contextTokenBudget,
+      userInput,
     });
 
     if (contextBlocks.length === 0) {

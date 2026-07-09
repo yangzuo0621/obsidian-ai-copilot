@@ -1,9 +1,10 @@
 import { ContextBudget } from "./ContextBudget";
-import type { ContextBlock, ContextBuildOptions, ContextSource } from "./types";
+import type { ContextBlock, ContextBuildOptions, ContextSource, QueryContextSource } from "./types";
 
 export interface ContextBuilderSources {
   selection: ContextSource;
   currentFile: ContextSource;
+  vaultSearch?: QueryContextSource;
 }
 
 export class ContextBuilder {
@@ -27,6 +28,10 @@ export class ContextBuilder {
       if (currentFileBlock) {
         blocks.push(currentFileBlock);
       }
+    }
+
+    if (options.includeVaultSearch && this.sources.vaultSearch) {
+      blocks.push(...(await this.sources.vaultSearch.collect(options.userInput)));
     }
 
     return this.budget.apply(blocks, options.tokenBudget);

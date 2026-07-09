@@ -186,3 +186,22 @@ Chat history belongs to the plugin rather than to user notes. Keeping it in plug
 - Legacy flat settings data remains readable and is migrated to the envelope on the next save.
 - Deleting a chat session removes only saved plugin chat history and does not touch vault content.
 - Future persistence changes must preserve settings and chat data independently.
+
+## ADR-011: Use Read-Only Keyword Search for Stage 7 Vault Context
+
+Status: Accepted
+
+### Decision
+
+Stage 7 vault search will scan Markdown files on demand through Obsidian's vault APIs and convert keyword matches into `vault-search` context blocks.
+
+### Reason
+
+The stage goal is simple Vault-wide context, not a retrieval index. On-demand keyword search keeps the implementation read-only, avoids new persistence, and leaves semantic retrieval, chunking, vector storage, and file-change indexing for Stage 8.
+
+### Consequences
+
+- Vault search uses `Vault.getMarkdownFiles()` and `Vault.cachedRead()` through `VaultAdapter`.
+- Search results are prompt context only; they do not create, edit, or index user notes.
+- Large vault performance may be limited until Stage 8 introduces indexing and embedding retrieval.
+- Editing commands keep vault search disabled and continue to use only explicit editor context.
