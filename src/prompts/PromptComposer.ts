@@ -1,9 +1,12 @@
 import type { ContextBlock } from "../context/types";
 import type { ChatMessage } from "../providers/types";
 
+import { getCommandInstruction } from "./commandPrompts";
+import type { PromptMode } from "./commandPrompts";
 import { CHAT_SYSTEM_PROMPT } from "./systemPrompts";
 
 export interface ComposePromptInput {
+  mode?: PromptMode;
   userInput: string;
   contextBlocks: ContextBlock[];
   history: ChatMessage[];
@@ -16,26 +19,30 @@ export class PromptComposer {
       ...input.history,
       {
         role: "user",
-        content: this.composeUserMessage(input.userInput, input.contextBlocks),
+        content: this.composeUserMessage(input.userInput, input.contextBlocks, input.mode ?? "chat"),
       },
     ];
   }
 
-  private composeUserMessage(userInput: string, contextBlocks: ContextBlock[]): string {
-    if (contextBlocks.length === 0) {
+  private composeUserMessage(userInput: string, contextBlocks: ContextBlock[], mode: PromptMode): string {
+    if (mode === "chat" && contextBlocks.length === 0) {
       return userInput;
     }
 
-    const renderedContext = contextBlocks.map(renderContextBlock).join("\n\n");
+    const parts: string[] = [];
+    const commandInstruction = getCommandInstruction(mode);
+    if (commandInstruction) {
+      parts.push("Task:", commandInstruction, "");
+    }
 
-    return [
-      "Use the following Obsidian context if it helps answer the user's request.",
-      "",
-      renderedContext,
-      "",
-      "User request:",
-      userInput,
-    ].join("\n");
+    if (contextBlocks.length > 0) {
+      const renderedContext = contextBlocks.map(renderContextBlock).join("\n\n");
+      parts.push("Use the following Obsidian context if it helps answer the user's request.", "", renderedContext, "");
+    }
+
+    parts.push("User request:", userInput);
+
+    return parts.join("\n");
   }
 }
 

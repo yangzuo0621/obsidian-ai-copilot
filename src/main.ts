@@ -2,6 +2,8 @@ import { Notice, Plugin } from "obsidian";
 import type { WorkspaceLeaf } from "obsidian";
 
 import { ChatService } from "./chat/ChatService";
+import { EditingCommandService } from "./commands/EditingCommandService";
+import { registerEditingCommands } from "./commands/registerCommands";
 import { ContextBuilder } from "./context/ContextBuilder";
 import { CurrentFileContext } from "./context/CurrentFileContext";
 import { SelectionContext } from "./context/SelectionContext";
@@ -30,6 +32,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       currentFile: new CurrentFileContext(currentFileAdapter),
     });
     this.chatService = new ChatService(() => this.copilotSettings, contextBuilder);
+    const editingCommandService = new EditingCommandService(() => this.copilotSettings, contextBuilder, editorAdapter);
 
     this.registerView(COPILOT_VIEW_TYPE, (leaf: WorkspaceLeaf) => new CopilotView(leaf, this.chatService));
 
@@ -62,6 +65,8 @@ export default class ObsidianAICopilotPlugin extends Plugin {
         await this.testProvider();
       },
     });
+
+    registerEditingCommands(this, editingCommandService);
 
     new Notice("Obsidian AI Copilot loaded.");
   }
