@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 5
+Current stage: 6
 Current status: completed
 
 ## Project Verification
@@ -39,7 +39,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 3: Streaming and abort
 - [x] Stage 4: Current note and selection context
 - [x] Stage 5: Editing commands
-- [ ] Stage 6: Chat history persistence
+- [x] Stage 6: Chat history persistence
 - [ ] Stage 7: Vault search context
 - [ ] Stage 8: Embedding retrieval
 - [ ] Stage 9: Tools and agent mode
@@ -523,7 +523,7 @@ Provider failures show a Notice and do not write generated text.
 
 ## Stage 6: Chat History Persistence
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -534,6 +534,63 @@ Persist and restore chat sessions.
 - Chat store.
 - Session list.
 - Create, switch, and delete sessions.
+
+### Files
+
+- `src/main.ts`
+- `src/chat/types.ts`
+- `src/chat/ChatStore.ts`
+- `src/chat/ChatStore.test.ts`
+- `src/chat/ChatService.ts`
+- `src/chat/ChatService.test.ts`
+- `src/ui/CopilotView.ts`
+- `styles.css`
+- `docs/stage-status.md`
+- `docs/architecture-decisions.md`
+
+### Completion Criteria
+
+- Chat sessions are saved in Obsidian plugin data.
+- Plugin data stores settings and chat history without overwriting either section.
+- Plugin reload restores the active session and saved messages.
+- The Copilot sidebar can create, switch, and delete chat sessions.
+- Session histories remain isolated from each other.
+- Streaming responses continue to update the session and message that started the request.
+- Chat persistence behavior is covered by focused unit tests.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Obsidian can open `Ask Copilot: Open Chat`.
+Sending a chat message saves it to the active session.
+Clicking New creates an empty session and switches to it.
+The session selector switches between saved sessions without mixing messages.
+Clicking Delete removes the current saved session after confirmation.
+Reloading Obsidian restores the saved sessions, active session, and messages.
+Streaming, Stop, context preview, and provider errors still behave as before.
+```
+
+### Notes
+
+- Stage 6 stores chat history in Obsidian plugin data alongside settings, not in user notes.
+- Existing flat settings data is still accepted and is migrated to the settings/chat envelope on the next save.
+- Deleting a chat session removes only plugin chat history, not vault content.
+- Automated verification passed on 2026-07-09.
 
 ## Stage 7: Vault Search Context
 

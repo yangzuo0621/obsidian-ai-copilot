@@ -29,6 +29,23 @@
   white-space: nowrap;
 }
 
+.obsidian-ai-copilot-session-controls {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.obsidian-ai-copilot-session-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.obsidian-ai-copilot-session-new,
+.obsidian-ai-copilot-session-delete {
+  flex: 0 0 auto;
+}
+
 .obsidian-ai-copilot-context-preview {
   border-bottom: 1px solid var(--background-modifier-border);
   color: var(--text-muted);

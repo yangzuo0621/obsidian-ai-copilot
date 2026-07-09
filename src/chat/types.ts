@@ -23,8 +23,23 @@ export interface ChatSession {
   updatedAt: number;
 }
 
+export interface ChatSessionSummary {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+}
+
+export interface PersistedChatData {
+  sessions: ChatSession[];
+  activeSessionId: string;
+}
+
 export interface ChatState {
   session: ChatSession;
+  sessions: ChatSessionSummary[];
+  activeSessionId: string;
   isSending: boolean;
   contextBlocks: ContextBlockSummary[];
 }
