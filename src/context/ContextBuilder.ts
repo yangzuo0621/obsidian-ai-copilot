@@ -1,5 +1,11 @@
 import { ContextBudget } from "./ContextBudget";
-import type { ContextBlock, ContextBuildOptions, ContextSource, QueryContextSource } from "./types";
+import type {
+  ContextBlock,
+  ContextBlockBuilder,
+  ContextBuildOptions,
+  ContextSource,
+  QueryContextSource,
+} from "./types";
 
 export interface ContextBuilderSources {
   selection: ContextSource;
@@ -8,7 +14,7 @@ export interface ContextBuilderSources {
   semanticSearch?: QueryContextSource;
 }
 
-export class ContextBuilder {
+export class ContextBuilder implements ContextBlockBuilder {
   constructor(
     private readonly sources: ContextBuilderSources,
     private readonly budget = new ContextBudget(),

@@ -1,4 +1,4 @@
-import type { ContextBlock } from "../context/types";
+import type { ContextBlock, ContextBlockBuilder } from "../context/types";
 import { summarizeContextBlock } from "../context/types";
 import type { AgentRunner } from "../agent/AgentRunner";
 import { createProvider } from "../providers/ProviderFactory";
@@ -14,17 +14,6 @@ import type { ChatMode, ChatSession, ChatState, PersistedChatData, ToolActivityR
 type ChatStateListener = (state: ChatState) => void;
 type SaveChatData = (data: PersistedChatData) => Promise<void>;
 
-interface ContextBuilderLike {
-  build(options: {
-    includeCurrentFile: boolean;
-    includeSelection: boolean;
-    includeVaultSearch: boolean;
-    includeEmbeddingRetrieval: boolean;
-    tokenBudget: number;
-    userInput: string;
-  }): Promise<ContextBlock[]>;
-}
-
 export class ChatService {
   private readonly listeners = new Set<ChatStateListener>();
   private readonly streamController = new StreamController();
@@ -35,7 +24,7 @@ export class ChatService {
 
   constructor(
     private readonly getSettings: () => CopilotSettings,
-    private readonly contextBuilder?: ContextBuilderLike,
+    private readonly contextBuilder?: ContextBlockBuilder,
     private readonly chatStore = new ChatStore(),
     private readonly saveChatData?: SaveChatData,
     private readonly agentRunner?: AgentRunner,
