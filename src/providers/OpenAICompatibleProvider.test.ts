@@ -80,17 +80,15 @@ describe("OpenAICompatibleProvider", () => {
       baseUrl: "https://example.test/v1/",
     });
     const onToken = vi.fn();
-    const onDone = vi.fn();
-    const onError = vi.fn();
     const abortController = new AbortController();
 
-    await provider.stream(
+    const result = await provider.stream(
       {
         model: "test-model",
         temperature: 0.3,
         messages: [{ role: "user", content: "Hello" }],
       },
-      { onToken, onDone, onError },
+      { onToken },
       abortController.signal,
     );
 
@@ -112,8 +110,7 @@ describe("OpenAICompatibleProvider", () => {
     expect(onToken).toHaveBeenCalledTimes(2);
     expect(onToken).toHaveBeenNthCalledWith(1, "Hel");
     expect(onToken).toHaveBeenNthCalledWith(2, "lo");
-    expect(onDone).toHaveBeenCalledTimes(1);
-    expect(onError).not.toHaveBeenCalled();
+    expect(result.content).toBe("Hello");
   });
 
   it("throws useful streaming errors for non-ok responses", async () => {
@@ -132,11 +129,7 @@ describe("OpenAICompatibleProvider", () => {
           model: "test-model",
           messages: [],
         },
-        {
-          onToken: vi.fn(),
-          onDone: vi.fn(),
-          onError: vi.fn(),
-        },
+        { onToken: vi.fn() },
       ),
     ).rejects.toThrow('Provider request failed with HTTP 400: {"error":"stream bad request"}');
   });
@@ -162,7 +155,7 @@ describe("OpenAICompatibleProvider", () => {
           },
         ],
       },
-      { onToken: vi.fn(), onDone: vi.fn(), onError: vi.fn() },
+      { onToken: vi.fn() },
     );
 
     expect(result).toEqual({

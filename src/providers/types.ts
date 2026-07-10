@@ -51,8 +51,6 @@ export interface CompletionResult {
 
 export interface StreamCallbacks {
   onToken(token: string): void;
-  onDone(result: StreamResult): void;
-  onError(error: unknown): void;
 }
 
 export interface StreamResult {
