@@ -7,6 +7,7 @@ import type {
   StreamResult,
   ToolCall,
 } from "./types";
+import { formatHttpErrorBody, parseHttpResponseBody } from "./http";
 
 interface OpenAICompatibleProviderOptions {
   apiKey: string;
@@ -67,10 +68,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
       }),
     });
 
-    const responseBody: unknown = await parseResponseBody(response);
+    const responseBody = await parseHttpResponseBody(response);
 
     if (!response.ok) {
-      throw new Error(`Provider request failed with HTTP ${response.status}: ${formatErrorBody(responseBody)}`);
+      throw new Error(`Provider request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 
     const content = extractAssistantContent(responseBody);
@@ -103,8 +104,8 @@ export class OpenAICompatibleProvider implements LLMProvider {
     });
 
     if (!response.ok) {
-      const responseBody = await parseResponseBody(response);
-      throw new Error(`Provider request failed with HTTP ${response.status}: ${formatErrorBody(responseBody)}`);
+      const responseBody = await parseHttpResponseBody(response);
+      throw new Error(`Provider request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 
     if (!response.body) {
@@ -146,19 +147,6 @@ function validateRequest(baseUrl: string, request: CompletionRequest): void {
 
   if (!request.model) {
     throw new Error("Model is required.");
-  }
-}
-
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const text = await response.text();
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return text;
   }
 }
 
@@ -265,18 +253,6 @@ function isChatCompletionResponse(value: unknown): value is OpenAIChatCompletion
 
 function isChatCompletionChunk(value: unknown): value is OpenAIChatCompletionChunk {
   return typeof value === "object" && value !== null;
-}
-
-function formatErrorBody(responseBody: unknown): string {
-  if (typeof responseBody === "string") {
-    return responseBody;
-  }
-
-  try {
-    return JSON.stringify(responseBody);
-  } catch {
-    return "Unable to serialize error response.";
-  }
 }
 
 function serializeMessages(messages: ChatMessage[]): Array<Record<string, unknown>> {
