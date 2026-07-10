@@ -2,7 +2,7 @@ import { ItemView, Notice } from "obsidian";
 import type { WorkspaceLeaf } from "obsidian";
 
 import type { ChatService } from "../chat/ChatService";
-import type { ChatMessageRecord, ChatState } from "../chat/types";
+import type { ChatMessageRecord, ChatMode, ChatState, ToolActivityRecord } from "../chat/types";
 import type { ContextBlockSummary } from "../context/types";
 
 export const COPILOT_VIEW_TYPE = "obsidian-ai-copilot-view";
@@ -13,6 +13,7 @@ export class CopilotView extends ItemView {
   private sessionSelectEl!: HTMLSelectElement;
   private newSessionButtonEl!: HTMLButtonElement;
   private deleteSessionButtonEl!: HTMLButtonElement;
+  private modeSelectEl!: HTMLSelectElement;
   private contextPreviewEl!: HTMLElement;
   private messageListEl!: HTMLElement;
   private textareaEl!: HTMLTextAreaElement;
@@ -90,6 +91,12 @@ export class CopilotView extends ItemView {
       cls: "obsidian-ai-copilot-session-delete",
       text: "Delete",
     });
+    this.modeSelectEl = sessionControlsEl.createEl("select", {
+      cls: "obsidian-ai-copilot-mode-select",
+      attr: { "aria-label": "Copilot mode" },
+    });
+    this.modeSelectEl.createEl("option", { text: "Chat", value: "chat" });
+    this.modeSelectEl.createEl("option", { text: "Agent", value: "agent" });
     this.contextPreviewEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-context-preview" });
 
     this.messageListEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-messages" });
@@ -139,6 +146,10 @@ export class CopilotView extends ItemView {
       }
     });
 
+    this.registerDomEvent(this.modeSelectEl, "change", () => {
+      this.chatService.setMode(this.modeSelectEl.value as ChatMode);
+    });
+
     this.registerDomEvent(this.textareaEl, "keydown", (event: KeyboardEvent) => {
       if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
@@ -186,6 +197,8 @@ export class CopilotView extends ItemView {
     this.sessionSelectEl.disabled = state.isSending;
     this.newSessionButtonEl.disabled = state.isSending;
     this.deleteSessionButtonEl.disabled = state.isSending;
+    this.modeSelectEl.value = state.mode;
+    this.modeSelectEl.disabled = state.isSending;
   }
 
   private renderContextPreview(contextBlocks: ContextBlockSummary[]): void {
@@ -290,6 +303,33 @@ export class CopilotView extends ItemView {
         text: message.error,
       });
     }
+
+    if (message.toolActivities?.length) {
+      const toolsEl = messageEl.createDiv({ cls: "obsidian-ai-copilot-tool-list" });
+      for (const activity of message.toolActivities) {
+        this.renderToolActivity(toolsEl, activity);
+      }
+    }
+  }
+
+  private renderToolActivity(parentEl: HTMLElement, activity: ToolActivityRecord): void {
+    const activityEl = parentEl.createEl("details", { cls: "obsidian-ai-copilot-tool-activity" });
+    const summaryEl = activityEl.createEl("summary");
+    summaryEl.createSpan({ cls: "obsidian-ai-copilot-tool-name", text: activity.toolName });
+    summaryEl.createSpan({
+      cls: `obsidian-ai-copilot-tool-status obsidian-ai-copilot-tool-status-${activity.status}`,
+      text: formatToolStatus(activity.status),
+    });
+    activityEl.createEl("pre", {
+      cls: "obsidian-ai-copilot-tool-data",
+      text: `Input\n${formatJson(activity.arguments)}`,
+    });
+    if (activity.result) {
+      activityEl.createEl("pre", {
+        cls: "obsidian-ai-copilot-tool-data",
+        text: `Result\n${formatJson(activity.result)}`,
+      });
+    }
   }
 
   private async submitMessage(): Promise<void> {
@@ -318,9 +358,25 @@ export class CopilotView extends ItemView {
     this.sessionSelectEl.disabled = isSending;
     this.newSessionButtonEl.disabled = isSending;
     this.deleteSessionButtonEl.disabled = isSending;
+    this.modeSelectEl.disabled = isSending;
     this.sendButtonEl.disabled = isSending || !hasInput;
     this.sendButtonEl.setText(isSending ? "Sending..." : "Send");
     this.stopButtonEl.disabled = !isSending;
     this.stopButtonEl.toggleClass("is-hidden", !isSending);
+  }
+}
+
+function formatToolStatus(status: ToolActivityRecord["status"]): string {
+  if (status === "awaiting-confirmation") {
+    return "Awaiting approval";
+  }
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatJson(value: string): string {
+  try {
+    return JSON.stringify(JSON.parse(value) as unknown, null, 2);
+  } catch {
+    return value;
   }
 }
