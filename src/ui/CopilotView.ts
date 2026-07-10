@@ -21,6 +21,7 @@ export class CopilotView extends ItemView {
   private stopButtonEl!: HTMLButtonElement;
   private unsubscribe: (() => void) | null = null;
   private currentState: ChatState | null = null;
+  private isContextPreviewExpanded = false;
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -212,12 +213,25 @@ export class CopilotView extends ItemView {
       return;
     }
 
-    this.contextPreviewEl.createDiv({
-      cls: "obsidian-ai-copilot-context-label",
-      text: "Context used",
+    const detailsEl = this.contextPreviewEl.createEl("details", {
+      cls: "obsidian-ai-copilot-context-details",
+    });
+    detailsEl.open = this.isContextPreviewExpanded;
+
+    const summaryEl = detailsEl.createEl("summary", {
+      cls: "obsidian-ai-copilot-context-summary",
+      text: `Context used (${contextBlocks.length})`,
+    });
+    summaryEl.createSpan({
+      cls: "obsidian-ai-copilot-context-summary-hint",
+      text: this.isContextPreviewExpanded ? "Hide" : "Show",
     });
 
-    const listEl = this.contextPreviewEl.createDiv({ cls: "obsidian-ai-copilot-context-list" });
+    detailsEl.addEventListener("toggle", () => {
+      this.isContextPreviewExpanded = detailsEl.open;
+    });
+
+    const listEl = detailsEl.createDiv({ cls: "obsidian-ai-copilot-context-list" });
     for (const block of contextBlocks) {
       this.renderContextBlock(listEl, block);
     }
