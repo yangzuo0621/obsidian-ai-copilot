@@ -16,7 +16,7 @@ import { CurrentFileAdapter } from "./obsidian/CurrentFileAdapter";
 import { EditorAdapter } from "./obsidian/EditorAdapter";
 import { VaultAdapter } from "./obsidian/VaultAdapter";
 import { WorkspaceAdapter } from "./obsidian/WorkspaceAdapter";
-import { createProvider } from "./providers/ProviderRegistry";
+import { createProvider } from "./providers/ProviderFactory";
 import { EmbeddingIndexService } from "./retrieval/EmbeddingIndexService";
 import { OpenAICompatibleEmbeddingProvider } from "./retrieval/EmbeddingProvider";
 import { SearchService } from "./retrieval/SearchService";

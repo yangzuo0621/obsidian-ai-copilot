@@ -8,7 +8,7 @@ import { EditingCommandService } from "./EditingCommandService";
 
 const providerComplete = vi.hoisted(() => vi.fn());
 
-vi.mock("../providers/ProviderRegistry", () => ({
+vi.mock("../providers/ProviderFactory", () => ({
   createProvider: () => ({
     id: "test-provider",
     label: "Test provider",

@@ -182,7 +182,7 @@ Add plugin settings and the first model provider abstraction.
 - `src/settings/SettingsTab.ts`
 - `src/providers/types.ts`
 - `src/providers/OpenAICompatibleProvider.ts`
-- `src/providers/ProviderRegistry.ts`
+- `src/providers/ProviderFactory.ts`
 - `docs/stage-status.md`
 
 ### Completion Criteria
