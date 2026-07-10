@@ -56,8 +56,6 @@ export class AgentRunner {
               fullContent += token;
               options.callbacks.onToken(token);
             },
-            onDone: () => undefined,
-            onError: () => undefined,
           },
           controller.signal,
         );

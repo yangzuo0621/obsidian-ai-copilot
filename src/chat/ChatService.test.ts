@@ -52,7 +52,7 @@ describe("ChatService", () => {
     providerStream.mockImplementation(async (_request, callbacks) => {
       callbacks.onToken("Assistant ");
       callbacks.onToken("reply");
-      callbacks.onDone();
+      return { content: "Assistant reply", toolCalls: [], finishReason: "stop" };
     });
     const service = new ChatService(() => ({
       ...DEFAULT_SETTINGS,
@@ -107,7 +107,7 @@ describe("ChatService", () => {
   it("injects context into the provider request and state", async () => {
     providerStream.mockImplementation(async (_request, callbacks) => {
       callbacks.onToken("Contextual answer");
-      callbacks.onDone();
+      return { content: "Contextual answer", toolCalls: [], finishReason: "stop" };
     });
     const buildContext = vi.fn(async () => [
       {
@@ -167,7 +167,7 @@ describe("ChatService", () => {
     let resolveRequest!: () => void;
     providerStream.mockReturnValue(
       new Promise((resolve) => {
-        resolveRequest = () => resolve(undefined);
+        resolveRequest = () => resolve({ content: "", toolCalls: [], finishReason: "stop" });
       }),
     );
     const service = new ChatService(() => DEFAULT_SETTINGS);
@@ -218,7 +218,7 @@ describe("ChatService", () => {
   it("persists chat data after a completed response", async () => {
     providerStream.mockImplementation(async (_request, callbacks) => {
       callbacks.onToken("Saved");
-      callbacks.onDone();
+      return { content: "Saved", toolCalls: [], finishReason: "stop" };
     });
     const saveChatData = vi.fn().mockResolvedValue(undefined);
     const service = new ChatService(() => DEFAULT_SETTINGS, undefined, new ChatStore(), saveChatData);
@@ -262,7 +262,7 @@ describe("ChatService", () => {
   it("keeps session histories isolated when switching sessions", async () => {
     providerStream.mockImplementation(async (_request, callbacks) => {
       callbacks.onToken("Reply");
-      callbacks.onDone();
+      return { content: "Reply", toolCalls: [], finishReason: "stop" };
     });
     const service = new ChatService(() => DEFAULT_SETTINGS);
     const firstSessionId = service.getState().activeSessionId;
@@ -303,12 +303,10 @@ describe("ChatService", () => {
           ],
           finishReason: "tool_calls",
         };
-        callbacks.onDone(result);
         return result;
       }
       const result = { content: "The note says hello.", toolCalls: [], finishReason: "stop" };
       callbacks.onToken(result.content);
-      callbacks.onDone(result);
       return result;
     });
     const runner = new AgentRunner(new ToolRegistry([tool]), { confirm: vi.fn().mockResolvedValue(true) });

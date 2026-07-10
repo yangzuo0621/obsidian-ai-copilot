@@ -32,19 +32,12 @@ export class StreamController {
               options.callbacks.onToken(token);
             }
           },
-          onDone: () => {
-            if (this.abortManager.isRunning(options.id)) {
-              options.callbacks.onDone();
-            }
-          },
-          onError: (error) => {
-            if (this.abortManager.isRunning(options.id)) {
-              options.callbacks.onError(error);
-            }
-          },
         },
         abortController.signal,
       );
+      if (this.abortManager.isRunning(options.id)) {
+        options.callbacks.onDone();
+      }
     } catch (error) {
       if (isAbortError(error) || abortController.signal.aborted) {
         options.callbacks.onAbort();

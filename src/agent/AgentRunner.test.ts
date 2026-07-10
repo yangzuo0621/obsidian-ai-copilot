@@ -31,7 +31,6 @@ describe("AgentRunner", () => {
       if (response.content) {
         callbacks.onToken(response.content);
       }
-      callbacks.onDone(response);
       return response;
     });
     const provider = createProvider(stream);

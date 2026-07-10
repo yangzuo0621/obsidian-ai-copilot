@@ -123,9 +123,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
       }
     });
 
-    const result = accumulator.result();
-    callbacks.onDone(result);
-    return result;
+    return accumulator.result();
   }
 
   private buildHeaders(): Record<string, string> {
