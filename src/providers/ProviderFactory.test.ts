@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_SETTINGS } from "../settings/defaults";
 
 import { OpenAICompatibleProvider } from "./OpenAICompatibleProvider";
-import { createProvider } from "./ProviderRegistry";
+import { createProvider } from "./ProviderFactory";
 
-describe("ProviderRegistry", () => {
+describe("ProviderFactory", () => {
   it("creates the configured OpenAI-compatible provider", () => {
     const provider = createProvider(DEFAULT_SETTINGS);
 

@@ -2,7 +2,7 @@ import type { Editor } from "obsidian";
 
 import type { ContextBlock } from "../context/types";
 import type { EditorAdapter } from "../obsidian/EditorAdapter";
-import { createProvider } from "../providers/ProviderRegistry";
+import { createProvider } from "../providers/ProviderFactory";
 import { PromptComposer } from "../prompts/PromptComposer";
 import type { PromptMode } from "../prompts/commandPrompts";
 import type { CopilotSettings } from "../settings/types";

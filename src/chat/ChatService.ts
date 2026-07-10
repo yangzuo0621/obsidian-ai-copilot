@@ -1,7 +1,7 @@
 import type { ContextBlock } from "../context/types";
 import { summarizeContextBlock } from "../context/types";
 import type { AgentRunner } from "../agent/AgentRunner";
-import { createProvider } from "../providers/ProviderRegistry";
+import { createProvider } from "../providers/ProviderFactory";
 import type { ChatMessage } from "../providers/types";
 import { PromptComposer } from "../prompts/PromptComposer";
 import type { CopilotSettings } from "../settings/types";

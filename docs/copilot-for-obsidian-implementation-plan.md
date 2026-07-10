@@ -76,7 +76,7 @@ src/
   providers/
     types.ts
     OpenAICompatibleProvider.ts
-    ProviderRegistry.ts
+    ProviderFactory.ts
 
   chat/
     types.ts
