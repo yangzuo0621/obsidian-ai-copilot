@@ -1,6 +1,8 @@
 import { normalizePath, TFile, TFolder } from "obsidian";
 import type { App } from "obsidian";
 
+import { hasMarkdownExtension, isMarkdownPath } from "./markdownFiles";
+
 export class VaultAdapter {
   constructor(private readonly app: App) {}
 
@@ -48,7 +50,7 @@ export class VaultAdapter {
   private requireMarkdownFile(path: string): TFile {
     const normalized = normalizeMarkdownPath(path);
     const file = this.app.vault.getAbstractFileByPath(normalized);
-    if (!(file instanceof TFile) || file.extension.toLowerCase() !== "md") {
+    if (!(file instanceof TFile) || !hasMarkdownExtension(file)) {
       throw new Error(`Markdown note not found: "${normalized}".`);
     }
     return file;
@@ -80,5 +82,5 @@ export function normalizeMarkdownPath(path: string): string {
   }
 
   const normalized = normalizePath(trimmed);
-  return normalized.toLowerCase().endsWith(".md") ? normalized : `${normalized}.md`;
+  return isMarkdownPath(normalized) ? normalized : `${normalized}.md`;
 }

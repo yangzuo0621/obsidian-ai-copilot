@@ -1,5 +1,5 @@
 import { Notice, Plugin, TFile } from "obsidian";
-import type { TAbstractFile, WorkspaceLeaf } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
 
 import { AgentRunner } from "./agent/AgentRunner";
 import { ChatService } from "./chat/ChatService";
@@ -14,6 +14,7 @@ import { SemanticSearchContext } from "./context/SemanticSearchContext";
 import { VaultSearchContext } from "./context/VaultSearchContext";
 import { CurrentFileAdapter } from "./obsidian/CurrentFileAdapter";
 import { EditorAdapter } from "./obsidian/EditorAdapter";
+import { hasMarkdownExtension, isMarkdownPath } from "./obsidian/markdownFiles";
 import { VaultAdapter } from "./obsidian/VaultAdapter";
 import { WorkspaceAdapter } from "./obsidian/WorkspaceAdapter";
 import { createProvider } from "./providers/ProviderFactory";
@@ -148,7 +149,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
   private registerEmbeddingIndexEvents(): void {
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (isMarkdownFile(file)) {
+        if (file instanceof TFile && hasMarkdownExtension(file)) {
           void this.refreshEmbeddingIndexFile(file);
         }
       }),
@@ -168,7 +169,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
           void this.embeddingIndexService.removeFile(oldPath);
         }
 
-        if (isMarkdownFile(file)) {
+        if (file instanceof TFile && hasMarkdownExtension(file)) {
           void this.refreshEmbeddingIndexFile(file);
         }
       }),
@@ -232,12 +233,4 @@ interface CopilotPluginData {
 
 function isPluginDataEnvelope(data: unknown): data is Partial<CopilotPluginData> {
   return typeof data === "object" && data !== null && ("settings" in data || "chat" in data);
-}
-
-function isMarkdownFile(file: TAbstractFile): file is TFile {
-  return file instanceof TFile && file.extension === "md";
-}
-
-function isMarkdownPath(path: string): boolean {
-  return path.toLowerCase().endsWith(".md");
 }

@@ -1,5 +1,6 @@
 import type { CurrentFileReader, CurrentFileSnapshot } from "../context/CurrentFileContext";
 
+import { hasMarkdownExtension } from "./markdownFiles";
 import type { VaultAdapter } from "./VaultAdapter";
 import type { WorkspaceAdapter } from "./WorkspaceAdapter";
 
@@ -13,7 +14,7 @@ export class CurrentFileAdapter implements CurrentFileReader {
     const editorSnapshot = this.workspace.getActiveEditorSnapshot();
     const view = editorSnapshot?.view;
     const file = editorSnapshot?.file ?? this.workspace.getActiveFile();
-    if (!file || file.extension !== "md") {
+    if (!file || !hasMarkdownExtension(file)) {
       return null;
     }
 

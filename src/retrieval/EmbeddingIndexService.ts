@@ -1,5 +1,6 @@
 import type { TFile } from "obsidian";
 
+import { hasMarkdownExtension } from "../obsidian/markdownFiles";
 import type { EmbeddingProvider } from "./EmbeddingProvider";
 import { hashContent, MarkdownChunker } from "./MarkdownChunker";
 import type { MarkdownFileReader } from "./SearchService";
@@ -56,7 +57,7 @@ export class EmbeddingIndexService {
   }
 
   async refreshFile(file: TFile): Promise<void> {
-    if (!isMarkdownFile(file)) {
+    if (!hasMarkdownExtension(file)) {
       return;
     }
 
@@ -114,8 +115,4 @@ export class EmbeddingIndexService {
   private async persist(): Promise<void> {
     await this.saveData?.(this.vectorStore.toJSON());
   }
-}
-
-function isMarkdownFile(file: TFile): boolean {
-  return file.extension === "md";
 }
