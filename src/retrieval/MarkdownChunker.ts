@@ -23,12 +23,27 @@ export class MarkdownChunker {
 
   chunk(path: string, basename: string, content: string): MarkdownChunk[] {
     const maxTokensPerChunk = this.options.maxTokensPerChunk ?? DEFAULT_MAX_TOKENS_PER_CHUNK;
+    if (!Number.isInteger(maxTokensPerChunk) || maxTokensPerChunk <= 0) {
+      throw new Error("maxTokensPerChunk must be a positive integer.");
+    }
+
     const lines = content.split(/\r?\n/);
     const chunks: MarkdownChunk[] = [];
     let chunkLines: string[] = [];
     let chunkStartLine = 1;
 
     lines.forEach((line, index) => {
+      if (estimateTokens(line) > maxTokensPerChunk) {
+        pushChunk(chunks, path, basename, chunkLines, chunkStartLine, index);
+        chunkLines = [];
+
+        for (const segment of splitLine(line, maxTokensPerChunk)) {
+          pushChunk(chunks, path, basename, [segment], index + 1, index + 1, true);
+        }
+        chunkStartLine = index + 2;
+        return;
+      }
+
       if (chunkLines.length === 0) {
         chunkStartLine = index + 1;
       }
@@ -57,9 +72,10 @@ function pushChunk(
   lines: string[],
   lineStart: number,
   lineEnd: number,
+  allowShortContent = false,
 ): void {
   const content = lines.join("\n").trim();
-  if (content.length < MIN_CONTENT_LENGTH) {
+  if (!content || (!allowShortContent && content.length < MIN_CONTENT_LENGTH)) {
     return;
   }
 
@@ -74,6 +90,17 @@ function pushChunk(
     tokenEstimate: estimateTokens(content),
     contentHash,
   });
+}
+
+function splitLine(line: string, maxTokensPerChunk: number): string[] {
+  const maxCharacters = maxTokensPerChunk * 4;
+  const segments: string[] = [];
+
+  for (let index = 0; index < line.length; index += maxCharacters) {
+    segments.push(line.slice(index, index + maxCharacters));
+  }
+
+  return segments;
 }
 
 export function hashContent(content: string): string {
