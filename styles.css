@@ -58,16 +58,32 @@
   line-height: 1.4;
 }
 
-.obsidian-ai-copilot-context-label {
+.obsidian-ai-copilot-context-details {
+  line-height: 1.4;
+}
+
+.obsidian-ai-copilot-context-summary {
+  align-items: center;
   color: var(--text-faint);
-  margin-bottom: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  list-style-position: inside;
   text-transform: uppercase;
+}
+
+.obsidian-ai-copilot-context-summary-hint {
+  color: var(--text-accent);
+  font-size: var(--font-ui-smaller);
+  margin-left: 8px;
+  text-transform: none;
 }
 
 .obsidian-ai-copilot-context-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 6px;
 }
 
 .obsidian-ai-copilot-context-block {
