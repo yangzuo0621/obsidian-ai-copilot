@@ -1,6 +1,7 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import type { TAbstractFile, WorkspaceLeaf } from "obsidian";
 
+import { AgentRunner } from "./agent/AgentRunner";
 import { ChatService } from "./chat/ChatService";
 import { ChatStore } from "./chat/ChatStore";
 import type { PersistedChatData } from "./chat/types";
@@ -23,7 +24,10 @@ import type { PersistedVectorStoreData } from "./retrieval/VectorStore";
 import { normalizeSettings } from "./settings/defaults";
 import { CopilotSettingsTab } from "./settings/SettingsTab";
 import type { CopilotSettings } from "./settings/types";
+import { createBuiltinTools } from "./tools/BuiltinTools";
+import { ToolRegistry } from "./tools/ToolRegistry";
 import { COPILOT_VIEW_TYPE, CopilotView } from "./ui/CopilotView";
+import { ObsidianToolConfirmationService } from "./ui/ToolConfirmationModal";
 
 export default class ObsidianAICopilotPlugin extends Plugin {
   copilotSettings!: CopilotSettings;
@@ -59,6 +63,8 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       vaultSearch: new VaultSearchContext(searchService),
       semanticSearch: new SemanticSearchContext(this.embeddingIndexService),
     });
+    const toolRegistry = new ToolRegistry(createBuiltinTools(vaultAdapter, searchService, editorAdapter));
+    const agentRunner = new AgentRunner(toolRegistry, new ObsidianToolConfirmationService(this.app));
     this.chatService = new ChatService(
       () => this.copilotSettings,
       contextBuilder,
@@ -67,6 +73,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
         this.chatData = chatData;
         await this.savePluginData();
       },
+      agentRunner,
     );
     const editingCommandService = new EditingCommandService(() => this.copilotSettings, contextBuilder, editorAdapter);
 

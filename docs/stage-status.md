@@ -6,7 +6,7 @@ Future stages are planning placeholders. They may be revised before implementati
 
 ## Current Stage
 
-Current stage: 8
+Current stage: 9
 Current status: completed
 
 ## Project Verification
@@ -42,7 +42,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 - [x] Stage 6: Chat history persistence
 - [x] Stage 7: Vault search context
 - [x] Stage 8: Embedding retrieval
-- [ ] Stage 9: Tools and agent mode
+- [x] Stage 9: Tools and agent mode
 
 ## Stage 0: Project Scaffold
 
@@ -764,7 +764,7 @@ Keyword vault search, selection context, current file context, streaming, Stop, 
 
 ## Stage 9: Tools and Agent Mode
 
-Status: planned
+Status: completed
 
 ### Goal
 
@@ -777,3 +777,90 @@ Allow the assistant to call controlled Obsidian tools.
 - Read/search tools.
 - Confirmed note-writing tools.
 - Agent runner.
+
+### Scope
+
+- Add an explicit Chat/Agent mode selector that defaults to Chat.
+- Add provider-neutral tool definitions, tool calls, assistant tool-call messages, and tool result messages.
+- Reconstruct streamed OpenAI-compatible tool calls by tool-call index.
+- Add a bounded, cancellable multi-round agent runner.
+- Add `search_vault`, `read_note`, `create_note`, `append_to_note`, and `replace_selection` tools.
+- Keep Obsidian API access behind vault and editor adapters.
+- Require a per-operation preview and confirmation before every note-writing tool.
+- Show and persist tool input, status, result, decline, and error activity with the assistant message.
+
+### Out of Scope
+
+- No delete, move, or rename tools.
+- No arbitrary filesystem, shell, or network tools.
+- No unconfirmed or background note writes.
+- No provider implementations beyond the existing OpenAI-compatible provider.
+- No parallel write execution, batch approvals, or long-running autonomous agents.
+
+### Files
+
+- `src/agent/AgentRunner.ts`
+- `src/tools/types.ts`
+- `src/tools/ToolRegistry.ts`
+- `src/tools/BuiltinTools.ts`
+- `src/providers/types.ts`
+- `src/providers/OpenAICompatibleProvider.ts`
+- `src/obsidian/VaultAdapter.ts`
+- `src/chat/types.ts`
+- `src/chat/ChatStore.ts`
+- `src/chat/ChatService.ts`
+- `src/prompts/PromptComposer.ts`
+- `src/prompts/systemPrompts.ts`
+- `src/ui/CopilotView.ts`
+- `src/ui/ToolConfirmationModal.ts`
+- `src/main.ts`
+- `styles.css`
+- Focused unit tests for provider tool streaming, the tool registry, built-in tools, the agent runner, chat integration, and persistence.
+
+### Completion Criteria
+
+- Agent mode can call `search_vault` and `read_note` and return results to the provider for another round.
+- `create_note`, `append_to_note`, and `replace_selection` cannot run before explicit user confirmation.
+- Declined writes do not modify the vault and are returned to the model as declined tool results.
+- Tool activity is visible in the Copilot sidebar and survives chat persistence.
+- Stop cancels the active provider or agent request and prevents later tool rounds.
+- Agent execution stops at a fixed round limit.
+- Ordinary Chat mode remains the default and does not expose tools to the provider.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+```
+
+Local smoke verification:
+
+```txt
+npm run deploy:test
+git status --short --branch
+```
+
+Manual verification after copying to a vault plugin folder:
+
+```txt
+Chat mode continues to stream ordinary responses without tool definitions.
+Agent mode can search the vault and read a selected Markdown note while showing tool activity.
+Creating or appending to a note opens a preview modal and changes the vault only after approval.
+Replacing a selection opens a preview modal and changes only the active selection after approval.
+Canceling any write confirmation leaves the note unchanged and shows the tool as declined.
+Clicking Stop ends the active agent request and prevents later tool calls.
+Reloading the plugin restores completed tool activity in chat history while defaulting back to Chat mode.
+```
+
+### Notes
+
+- Agent mode is deliberately explicit and is not persisted, so plugin reloads return to safer ordinary Chat mode.
+- The runner executes tool calls sequentially and stops after six provider rounds.
+- Vault paths are normalized, remain vault-relative, reject parent traversal, and gain a `.md` extension when omitted.
+- `create_note` refuses to overwrite any existing vault item and creates missing parent folders.
+- `append_to_note` uses `Vault.process()` for an atomic background edit; `replace_selection` uses the active Editor API.
+- OpenAI-compatible streamed tool-call name and argument fragments are accumulated by call index before execution.
+- Automated verification passed on 2026-07-10 with 20 test files and 73 tests.
+- Local test vault deployment passed on 2026-07-10.

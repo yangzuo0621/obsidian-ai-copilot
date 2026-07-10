@@ -1,5 +1,12 @@
 import { createChatSession } from "./ChatSession";
-import type { ChatMessageRecord, ChatSession, ChatSessionSummary, PersistedChatData } from "./types";
+import type {
+  ChatMessageRecord,
+  ChatSession,
+  ChatSessionSummary,
+  PersistedChatData,
+  ToolActivityRecord,
+  ToolActivityStatus,
+} from "./types";
 
 export class ChatStore {
   private sessions: ChatSession[];
@@ -200,14 +207,54 @@ function normalizeMessage(value: unknown): ChatMessageRecord | null {
     status,
     error: typeof value.error === "string" ? value.error : undefined,
     contextBlocks: Array.isArray(value.contextBlocks) ? value.contextBlocks : undefined,
+    toolActivities: Array.isArray(value.toolActivities)
+      ? value.toolActivities.map(normalizeToolActivity).filter((activity) => activity !== null)
+      : undefined,
   };
 }
 
 function cloneSession(session: ChatSession): ChatSession {
   return {
     ...session,
-    messages: session.messages.map((message) => ({ ...message })),
+    messages: session.messages.map((message) => ({
+      ...message,
+      toolActivities: message.toolActivities?.map((activity) => ({ ...activity })),
+    })),
   };
+}
+
+function normalizeToolActivity(value: unknown): ToolActivityRecord | null {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== "string" ||
+    typeof value.toolCallId !== "string" ||
+    typeof value.toolName !== "string" ||
+    typeof value.arguments !== "string" ||
+    !isToolActivityStatus(value.status)
+  ) {
+    return null;
+  }
+
+  return {
+    id: value.id,
+    toolCallId: value.toolCallId,
+    toolName: value.toolName,
+    arguments: value.arguments,
+    status: value.status,
+    result: typeof value.result === "string" ? value.result : undefined,
+    error: typeof value.error === "string" ? value.error : undefined,
+  };
+}
+
+function isToolActivityStatus(value: unknown): value is ToolActivityStatus {
+  return (
+    value === "requested" ||
+    value === "awaiting-confirmation" ||
+    value === "running" ||
+    value === "succeeded" ||
+    value === "declined" ||
+    value === "error"
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

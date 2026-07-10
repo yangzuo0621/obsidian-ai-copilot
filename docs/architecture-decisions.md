@@ -224,3 +224,25 @@ The embedding index belongs to the plugin and should not create or modify user M
 - Markdown modify, delete, and rename events update only plugin index data.
 - The index may make plugin data larger for big vaults; a future stage may move the vector store to a separate plugin-owned file if size or performance requires it.
 - Embedding retrieval remains opt-in because indexing can make network requests to the configured embedding provider.
+
+## ADR-013: Use an Explicit, Controlled Agent Mode
+
+Status: Accepted
+
+### Decision
+
+Tool calling will be available only in an explicit Agent mode that defaults back to ordinary Chat after plugin reload. Tools are registered behind provider-neutral interfaces, agent execution is sequential and bounded, and every note-writing tool requires a per-operation preview and confirmation before execution.
+
+### Reason
+
+Tool calling adds a new trust boundary: provider output can request local actions, but it must not gain unrestricted access to Obsidian or silently modify personal notes. A separate mode makes the capability visible, a registry limits the available operations, and per-write confirmation preserves user control.
+
+### Consequences
+
+- Ordinary Chat requests do not send tool definitions to the provider.
+- Agent mode may use only registered tools and stops after a fixed number of provider rounds.
+- Provider tool calls are treated as untrusted input and pass through JSON parsing and tool-specific validation.
+- Read tools execute without confirmation, while every write tool must provide a user-visible preview and receive approval.
+- Declined and failed tools return structured results to the provider rather than being hidden.
+- Tool activity is stored with assistant chat messages so the execution process remains visible after reload.
+- Obsidian APIs remain isolated in adapters and confirmation UI remains separate from tool business logic.

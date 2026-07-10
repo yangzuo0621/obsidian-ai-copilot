@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AgentRunner } from "../agent/AgentRunner";
 import { DEFAULT_SETTINGS } from "../settings/defaults";
+import { ToolRegistry } from "../tools/ToolRegistry";
+import type { Tool } from "../tools/types";
 
 import { ChatService } from "./ChatService";
 import { ChatStore } from "./ChatStore";
@@ -273,5 +276,69 @@ describe("ChatService", () => {
     await service.switchSession(firstSessionId);
 
     expect(service.getState().session.messages[0]?.content).toBe("First session");
+  });
+
+  it("runs tools only after agent mode is explicitly enabled", async () => {
+    const runTool = vi.fn(async () => ({ content: '{"ok":true,"content":"Note body"}' }));
+    const tool: Tool = {
+      name: "read_note",
+      description: "Read note",
+      inputSchema: { type: "object" },
+      kind: "read",
+      validate: (input) => input as Record<string, unknown>,
+      run: runTool,
+    };
+    let round = 0;
+    providerStream.mockImplementation(async (_request, callbacks) => {
+      round += 1;
+      if (round === 1) {
+        const result = {
+          content: "",
+          toolCalls: [
+            {
+              id: "call-1",
+              type: "function" as const,
+              function: { name: "read_note", arguments: '{"path":"note.md"}' },
+            },
+          ],
+          finishReason: "tool_calls",
+        };
+        callbacks.onDone(result);
+        return result;
+      }
+      const result = { content: "The note says hello.", toolCalls: [], finishReason: "stop" };
+      callbacks.onToken(result.content);
+      callbacks.onDone(result);
+      return result;
+    });
+    const runner = new AgentRunner(new ToolRegistry([tool]), { confirm: vi.fn().mockResolvedValue(true) });
+    const service = new ChatService(() => DEFAULT_SETTINGS, undefined, new ChatStore(), undefined, runner);
+
+    service.setMode("agent");
+    await service.sendMessage("Read note.md");
+
+    expect(service.getState()).toMatchObject({
+      mode: "agent",
+      session: {
+        messages: [
+          { role: "user", content: "Read note.md" },
+          {
+            role: "assistant",
+            content: "The note says hello.",
+            status: "done",
+            toolActivities: [{ toolName: "read_note", status: "succeeded" }],
+          },
+        ],
+      },
+    });
+    expect(runTool).toHaveBeenCalledWith({ path: "note.md" });
+    expect(providerStream.mock.calls[0]?.[0].messages[0]).toEqual({
+      role: "system",
+      content: expect.stringContaining("Agent mode is enabled"),
+    });
+    expect(providerStream.mock.calls[1]?.[0].messages.at(-1)).toMatchObject({
+      role: "tool",
+      toolCallId: "call-1",
+    });
   });
 });

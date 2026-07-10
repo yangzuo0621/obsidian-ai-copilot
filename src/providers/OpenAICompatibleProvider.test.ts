@@ -141,6 +141,43 @@ describe("OpenAICompatibleProvider", () => {
     ).rejects.toThrow('Provider request failed with HTTP 400: {"error":"stream bad request"}');
   });
 
+  it("reconstructs streamed tool calls by index", async () => {
+    const body = createStream([
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","function":{"name":"read_","arguments":""}}]}}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note"}}]}}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":".md\\"}"}}]},"finish_reason":"tool_calls"}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 200 })));
+    const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
+
+    const result = await provider.stream(
+      {
+        model: "test-model",
+        messages: [{ role: "user", content: "Read note" }],
+        tools: [
+          {
+            type: "function",
+            function: { name: "read_note", description: "Read note", parameters: { type: "object" } },
+          },
+        ],
+      },
+      { onToken: vi.fn(), onDone: vi.fn(), onError: vi.fn() },
+    );
+
+    expect(result).toEqual({
+      content: "",
+      finishReason: "tool_calls",
+      toolCalls: [
+        {
+          id: "call-1",
+          type: "function",
+          function: { name: "read_note", arguments: '{"path":"note.md"}' },
+        },
+      ],
+    });
+  });
+
   it("validates required request configuration before fetch", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

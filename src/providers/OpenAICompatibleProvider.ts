@@ -1,4 +1,12 @@
-import type { CompletionRequest, CompletionResult, LLMProvider, StreamCallbacks } from "./types";
+import type {
+  ChatMessage,
+  CompletionRequest,
+  CompletionResult,
+  LLMProvider,
+  StreamCallbacks,
+  StreamResult,
+  ToolCall,
+} from "./types";
 
 interface OpenAICompatibleProviderOptions {
   apiKey: string;
@@ -18,7 +26,17 @@ interface OpenAIChatCompletionChunk {
   choices?: Array<{
     delta?: {
       content?: string | null;
+      tool_calls?: Array<{
+        index?: number;
+        id?: string;
+        type?: string;
+        function?: {
+          name?: string;
+          arguments?: string;
+        };
+      }>;
     };
+    finish_reason?: string | null;
   }>;
 }
 
@@ -42,9 +60,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
       headers: this.buildHeaders(),
       body: JSON.stringify({
         model: request.model,
-        messages: request.messages,
+        messages: serializeMessages(request.messages),
         temperature: request.temperature,
         max_tokens: request.maxTokens,
+        tools: request.tools,
       }),
     });
 
@@ -66,7 +85,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
     };
   }
 
-  async stream(request: CompletionRequest, callbacks: StreamCallbacks, signal?: AbortSignal): Promise<void> {
+  async stream(request: CompletionRequest, callbacks: StreamCallbacks, signal?: AbortSignal): Promise<StreamResult> {
     validateRequest(this.baseUrl, request);
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -75,9 +94,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
       signal,
       body: JSON.stringify({
         model: request.model,
-        messages: request.messages,
+        messages: serializeMessages(request.messages),
         temperature: request.temperature,
         max_tokens: request.maxTokens,
+        tools: request.tools,
         stream: true,
       }),
     });
@@ -91,18 +111,21 @@ export class OpenAICompatibleProvider implements LLMProvider {
       throw new Error("Provider streaming response did not include a readable body.");
     }
 
+    const accumulator = new StreamAccumulator();
     await readServerSentEvents(response.body, (payload) => {
       if (payload === "[DONE]") {
         return;
       }
 
-      const token = extractStreamingToken(payload);
+      const token = accumulator.add(payload);
       if (token) {
         callbacks.onToken(token);
       }
     });
 
-    callbacks.onDone();
+    const result = accumulator.result();
+    callbacks.onDone(result);
+    return result;
   }
 
   private buildHeaders(): Record<string, string> {
@@ -181,19 +204,53 @@ function processServerSentEventLine(line: string, onData: (payload: string) => v
   onData(trimmed.slice("data:".length).trim());
 }
 
-function extractStreamingToken(payload: string): string | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(payload) as unknown;
-  } catch {
-    throw new Error(`Provider returned an invalid streaming chunk: ${payload}`);
+class StreamAccumulator {
+  private content = "";
+  private finishReason: string | undefined;
+  private readonly toolCalls = new Map<number, ToolCall>();
+
+  add(payload: string): string | null {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(payload) as unknown;
+    } catch {
+      throw new Error(`Provider returned an invalid streaming chunk: ${payload}`);
+    }
+
+    if (!isChatCompletionChunk(parsed)) {
+      return null;
+    }
+
+    let token = "";
+    for (const choice of parsed.choices ?? []) {
+      token += choice.delta?.content ?? "";
+      this.finishReason = choice.finish_reason ?? this.finishReason;
+
+      for (const delta of choice.delta?.tool_calls ?? []) {
+        const index = delta.index ?? 0;
+        const existing = this.toolCalls.get(index) ?? {
+          id: "",
+          type: "function" as const,
+          function: { name: "", arguments: "" },
+        };
+        existing.id = delta.id ?? existing.id;
+        existing.function.name += delta.function?.name ?? "";
+        existing.function.arguments += delta.function?.arguments ?? "";
+        this.toolCalls.set(index, existing);
+      }
+    }
+
+    this.content += token;
+    return token || null;
   }
 
-  if (!isChatCompletionChunk(parsed)) {
-    return null;
+  result(): StreamResult {
+    return {
+      content: this.content,
+      toolCalls: [...this.toolCalls.entries()].sort(([left], [right]) => left - right).map(([, call]) => call),
+      finishReason: this.finishReason,
+    };
   }
-
-  return parsed.choices?.map((choice) => choice.delta?.content ?? "").join("") || null;
 }
 
 function extractAssistantContent(responseBody: unknown): string | null {
@@ -222,4 +279,30 @@ function formatErrorBody(responseBody: unknown): string {
   } catch {
     return "Unable to serialize error response.";
   }
+}
+
+function serializeMessages(messages: ChatMessage[]): Array<Record<string, unknown>> {
+  return messages.map((message) => {
+    if (message.role === "assistant") {
+      return {
+        role: message.role,
+        content: message.content,
+        tool_calls: message.toolCalls?.map((call) => ({
+          id: call.id,
+          type: call.type,
+          function: call.function,
+        })),
+      };
+    }
+
+    if (message.role === "tool") {
+      return {
+        role: message.role,
+        content: message.content,
+        tool_call_id: message.toolCallId,
+      };
+    }
+
+    return { role: message.role, content: message.content };
+  });
 }

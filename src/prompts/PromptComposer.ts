@@ -3,19 +3,20 @@ import type { ChatMessage } from "../providers/types";
 
 import { getCommandInstruction } from "./commandPrompts";
 import type { PromptMode } from "./commandPrompts";
-import { CHAT_SYSTEM_PROMPT } from "./systemPrompts";
+import { AGENT_SYSTEM_PROMPT, CHAT_SYSTEM_PROMPT } from "./systemPrompts";
 
 export interface ComposePromptInput {
   mode?: PromptMode;
   userInput: string;
   contextBlocks: ContextBlock[];
   history: ChatMessage[];
+  agentMode?: boolean;
 }
 
 export class PromptComposer {
   compose(input: ComposePromptInput): ChatMessage[] {
     return [
-      { role: "system", content: CHAT_SYSTEM_PROMPT },
+      { role: "system", content: input.agentMode ? AGENT_SYSTEM_PROMPT : CHAT_SYSTEM_PROMPT },
       ...input.history,
       {
         role: "user",

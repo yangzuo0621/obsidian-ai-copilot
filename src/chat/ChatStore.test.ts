@@ -97,6 +97,17 @@ describe("ChatStore", () => {
               content: "Restored",
               createdAt: 100,
               status: "streaming",
+              toolActivities: [
+                {
+                  id: "activity-1",
+                  toolCallId: "call-1",
+                  toolName: "read_note",
+                  arguments: '{"path":"note.md"}',
+                  status: "succeeded",
+                  result: '{"ok":true}',
+                },
+                { id: "invalid" },
+              ],
             },
             {
               id: "message-invalid",
@@ -121,6 +132,13 @@ describe("ChatStore", () => {
           role: "assistant",
           content: "Restored",
           status: "aborted",
+          toolActivities: [
+            {
+              id: "activity-1",
+              toolName: "read_note",
+              status: "succeeded",
+            },
+          ],
         },
       ],
     });
