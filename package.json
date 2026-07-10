@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-ai-copilot",
-  "version": "0.0.1",
-  "description": "AI copilot for Obsidian notes.",
+  "name": "vault-loom",
+  "version": "1.0.0",
+  "description": "AI assistant for context-aware chat, retrieval, and confirmed note actions in Obsidian.",
   "main": "main.js",
   "scripts": {
     "build": "npm run typecheck && node esbuild.config.mjs production",
@@ -12,17 +12,30 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run format:check && npm run lint && npm run build && npm run test",
+    "verify": "npm run format:check && npm run lint && npm run build && npm run test && npm run release:check",
+    "release:check": "node scripts/check-release.mjs",
+    "version": "node scripts/version-bump.mjs && git add manifest.json versions.json",
     "dev": "node esbuild.config.mjs"
   },
   "keywords": [
     "obsidian",
     "obsidian-plugin",
     "ai",
-    "copilot"
+    "assistant",
+    "vault",
+    "retrieval",
+    "agent"
   ],
-  "author": "yangzuo0621",
+  "author": "Zuo Yang",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangzuo0621/obsidian-ai-copilot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yangzuo0621/obsidian-ai-copilot/issues"
+  },
+  "homepage": "https://github.com/yangzuo0621/obsidian-ai-copilot#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.0",

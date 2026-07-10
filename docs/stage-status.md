@@ -123,7 +123,7 @@ Manual smoke test steps:
 1. Run `npm run deploy:test`.
 2. Restart or reload Obsidian.
 3. Open Settings -> Community plugins.
-4. Enable `Obsidian AI Copilot`.
+4. Enable `Vault Loom`.
 5. Open the command palette and run `Show load notice`.
 6. Confirm a Notice appears.
 ```
@@ -143,7 +143,7 @@ npm run deploy:test -- "<test-vault>/.obsidian/plugins"
 
 ### Notes
 
-- Use a conservative plugin id, likely `obsidian-ai-copilot`.
+- Stage 0 initially used the development id `obsidian-ai-copilot`; marketplace preparation later changed it to `vault-loom` before the first public release.
 - Avoid introducing UI frameworks at this stage.
 - Avoid implementing any AI provider code in this stage.
 - Stage 0 uses the standard Obsidian plugin skeleton with npm, esbuild, and TypeScript.
@@ -191,7 +191,7 @@ Add plugin settings and the first model provider abstraction.
 - Settings tab allows editing API key, base URL, model, temperature, and context token budget.
 - Provider logic is behind `LLMProvider` and does not depend on Obsidian APIs.
 - OpenAI-compatible provider can send a non-streaming chat completions request.
-- Command palette includes `Ask Copilot: Test Provider`.
+- Command palette includes `Vault Loom: Test Provider`.
 
 ### Verification
 
@@ -213,7 +213,7 @@ Manual verification after copying to a vault plugin folder:
 ```txt
 Obsidian shows the plugin settings tab.
 Settings can be edited and persist after closing settings.
-Running `Ask Copilot: Test Provider` sends one non-streaming provider request.
+Running `Vault Loom: Test Provider` sends one non-streaming provider request.
 The command shows a success or failure Notice.
 ```
 
@@ -256,7 +256,7 @@ Add a usable Copilot sidebar with basic non-streaming chat.
 
 ### Completion Criteria
 
-- Command palette includes `Ask Copilot: Open Chat`.
+- Command palette includes `Vault Loom: Open Chat`.
 - The Copilot sidebar can be opened from the command palette or ribbon icon.
 - The sidebar renders an in-memory message list and composer.
 - Sending a message calls the configured provider through `ChatService.sendMessage()`.
@@ -281,7 +281,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat` from the command palette.
+Obsidian can open `Vault Loom: Open Chat` from the command palette.
 The ribbon icon opens the same Copilot sidebar.
 Typing a message and clicking Send sends one non-streaming provider request.
 The user message and assistant response appear in the sidebar.
@@ -348,7 +348,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat`.
+Obsidian can open `Vault Loom: Open Chat`.
 Typing a message streams the assistant response into the latest assistant message.
 Clicking Stop cancels the active request.
 After Stop, the composer returns to an idle state and the assistant message is marked Stopped.
@@ -430,7 +430,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat`.
+Obsidian can open `Vault Loom: Open Chat`.
 Selecting text in the active Markdown editor shows Selection in the context preview after sending a chat message.
 Sending a chat message without selected text shows Current file in the context preview when an active note is open.
 The assistant response streams normally and Stop still cancels the active request.
@@ -477,9 +477,9 @@ Add Obsidian-native writing commands.
 
 ### Completion Criteria
 
-- Command palette includes `Ask Copilot: Explain Selection`.
-- Command palette includes `Ask Copilot: Rewrite Selection`.
-- Command palette includes `Ask Copilot: Summarize Current Note`.
+- Command palette includes `Vault Loom: Explain Selection`.
+- Command palette includes `Vault Loom: Rewrite Selection`.
+- Command palette includes `Vault Loom: Summarize Current Note`.
 - Selection commands require active selected editor text.
 - Explain selection inserts the generated explanation through the editor adapter.
 - Rewrite selection replaces the current selection through the editor adapter.
@@ -505,10 +505,10 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can run `Ask Copilot: Explain Selection` from the command palette when text is selected.
-Running `Ask Copilot: Explain Selection` inserts an explanation into the active editor.
-Running `Ask Copilot: Rewrite Selection` replaces the selected text with the rewritten result.
-Running `Ask Copilot: Summarize Current Note` inserts a summary into the active editor.
+Obsidian can run `Vault Loom: Explain Selection` from the command palette when text is selected.
+Running `Vault Loom: Explain Selection` inserts an explanation into the active editor.
+Running `Vault Loom: Rewrite Selection` replaces the selected text with the rewritten result.
+Running `Vault Loom: Summarize Current Note` inserts a summary into the active editor.
 Running a selection command without selected text shows a Notice and does not call the provider.
 Provider failures show a Notice and do not write generated text.
 ```
@@ -576,7 +576,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat`.
+Obsidian can open `Vault Loom: Open Chat`.
 Sending a chat message saves it to the active session.
 Clicking New creates an empty session and switches to it.
 The session selector switches between saved sessions without mixing messages.
@@ -657,7 +657,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat`.
+Obsidian can open `Vault Loom: Open Chat`.
 With vault search enabled, asking about a keyword that appears in another Markdown note shows Vault search in the context preview.
 The preview shows the matching note path and line range.
 Disabling vault search in settings prevents vault search context from being attached.
@@ -744,7 +744,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Ask Copilot: Open Chat`.
+Obsidian can open `Vault Loom: Open Chat`.
 With embedding retrieval enabled and an embedding model configured, asking about a semantically related topic shows Semantic search in the context preview.
 The preview shows the matching note path and line range.
 Editing or renaming a Markdown note refreshes the semantic index for that note.
@@ -864,3 +864,34 @@ Reloading the plugin restores completed tool activity in chat history while defa
 - OpenAI-compatible streamed tool-call name and argument fragments are accumulated by call index before execution.
 - Automated verification passed on 2026-07-10 with 20 test files and 73 tests.
 - Local test vault deployment passed on 2026-07-10.
+
+## Marketplace Release Preparation
+
+Status: automated preparation completed; manual release pending
+
+### Scope
+
+- Adopt the public name `Vault Loom` and stable plugin id `vault-loom`.
+- Prepare version `1.0.0` with minimum Obsidian version `1.13.1`.
+- Keep the first release desktop-only until mobile verification is complete.
+- Add the MIT license and `versions.json` compatibility mapping.
+- Add version alignment and required-asset release checks.
+- Add a tag-driven GitHub Actions workflow that creates a Draft Release.
+- Document the manual smoke test, release, and initial directory submission steps.
+
+### Verification
+
+Automated verification:
+
+```txt
+npm run verify
+npm run release:check -- 1.0.0
+```
+
+Manual verification and submission remain tracked in `docs/releasing.md`.
+
+### Notes
+
+- The marketplace id omits `obsidian` to comply with new-plugin submission rules.
+- `AI Copilot` and `copilot` were already present in the Community Plugins directory, so the public brand was changed before the first release.
+- Release tags must exactly match the manifest version and must not use a `v` prefix.

@@ -30,7 +30,7 @@ import { ToolRegistry } from "./tools/ToolRegistry";
 import { COPILOT_VIEW_TYPE, CopilotView } from "./ui/CopilotView";
 import { ObsidianToolConfirmationService } from "./ui/ToolConfirmationModal";
 
-export default class ObsidianAICopilotPlugin extends Plugin {
+export default class VaultLoomPlugin extends Plugin {
   copilotSettings!: CopilotSettings;
   private chatService!: ChatService;
   private chatData: PersistedChatData | null = null;
@@ -86,25 +86,25 @@ export default class ObsidianAICopilotPlugin extends Plugin {
       id: "show-load-notice",
       name: "Show load notice",
       callback: () => {
-        new Notice("Obsidian AI Copilot is loaded.");
+        new Notice("Vault Loom is loaded.");
       },
     });
 
     this.addCommand({
-      id: "ask-copilot-open-chat",
-      name: "Ask Copilot: Open Chat",
+      id: "vault-loom-open-chat",
+      name: "Vault Loom: Open Chat",
       callback: async () => {
         await this.openCopilotViewWithNotice();
       },
     });
 
-    this.addRibbonIcon("bot", "Open AI Copilot", () => {
+    this.addRibbonIcon("bot", "Open Vault Loom", () => {
       void this.openCopilotViewWithNotice();
     });
 
     this.addCommand({
-      id: "ask-copilot-test-provider",
-      name: "Ask Copilot: Test Provider",
+      id: "vault-loom-test-provider",
+      name: "Vault Loom: Test Provider",
       callback: async () => {
         await this.testProvider();
       },
@@ -113,7 +113,7 @@ export default class ObsidianAICopilotPlugin extends Plugin {
     registerEditingCommands(this, editingCommandService);
     this.registerEmbeddingIndexEvents();
 
-    new Notice("Obsidian AI Copilot loaded.");
+    new Notice("Vault Loom loaded.");
   }
 
   override onunload(): void {
@@ -197,15 +197,15 @@ export default class ObsidianAICopilotPlugin extends Plugin {
         messages: [
           {
             role: "user",
-            content: "Reply with one short sentence confirming the Obsidian AI Copilot provider test worked.",
+            content: "Reply with one short sentence confirming the Vault Loom provider test worked.",
           },
         ],
       });
 
-      console.log("Obsidian AI Copilot provider test response:", result);
+      console.log("Vault Loom provider test response:", result);
       new Notice(`Provider test succeeded: ${result.content.slice(0, 120)}`);
     } catch (error) {
-      console.error("Obsidian AI Copilot provider test failed:", error);
+      console.error("Vault Loom provider test failed:", error);
       new Notice(`Provider test failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }

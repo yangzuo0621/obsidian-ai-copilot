@@ -1,8 +1,8 @@
-# Obsidian AI Copilot
+# Vault Loom
 
 [English](README.md)
 
-一款面向 Obsidian 的 AI 助手，集成流式聊天、笔记上下文、Vault 检索、编辑命令，以及需要确认才能写入笔记的 Agent 模式。
+让整个 Vault 成为有用的 AI 上下文。Vault Loom 为 Obsidian 集成流式聊天、笔记感知检索、编辑命令，以及需要确认才能写入笔记的 Agent 模式。
 
 > [!IMPORTANT]
 > 本插件目前处于预发布开发阶段，尚未上架 Obsidian 社区插件市场，当前需要手动安装。
@@ -21,9 +21,10 @@
 
 ## 运行要求与兼容性
 
-- Obsidian 1.5.0 或更高版本。
+- 桌面版 Obsidian 1.13.1 或更高版本。
 - OpenAI-compatible 接口，以及该接口所需的访问凭据。
-- 当前主要在桌面版 Obsidian 中开发和测试。插件清单允许在移动端安装，但移动端行为尚未完成全面验证。
+
+首个公开版本仅支持桌面端。完成 Obsidian 移动端完整流程验证后，再考虑启用移动端支持。
 
 部分兼容接口可能只支持聊天补全，不支持流式传输、工具调用或 Embedding。Chat 模式只要求兼容的聊天补全接口；Agent 模式需要工具调用能力；语义检索需要 Embedding 接口。
 
@@ -46,11 +47,11 @@
 3. 在 Vault 中创建插件目录：
 
    ```text
-   <vault>/.obsidian/plugins/obsidian-ai-copilot/
+   <vault>/.obsidian/plugins/vault-loom/
    ```
 
 4. 将 `main.js`、`manifest.json` 和 `styles.css` 复制到该目录。
-5. 重新加载 Obsidian，打开 **设置 → 第三方插件**，启用 **Obsidian AI Copilot**。
+5. 重新加载 Obsidian，打开 **设置 → 第三方插件**，启用 **Vault Loom**。
 
 开发测试时，可以在 `.env.local` 中设置 `OBSIDIAN_PLUGINS_DIR`，然后运行 `npm run deploy:test`。也可以直接传入目标目录：
 
@@ -60,7 +61,7 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 
 ## 配置
 
-打开 **设置 → Obsidian AI Copilot**，配置以下项目：
+打开 **设置 → Vault Loom**，配置以下项目：
 
 | 设置项                      | 用途                                 | 默认值                      |
 | --------------------------- | ------------------------------------ | --------------------------- |
@@ -75,13 +76,13 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 | Include vault search        | 附加关键词匹配的笔记片段             | 开启                        |
 | Include embedding retrieval | 建立索引并检索语义相关分块           | 关闭                        |
 
-可以在命令面板运行 **Ask Copilot: Test Provider** 检查聊天配置。
+可以在命令面板运行 **Vault Loom: Test Provider** 检查聊天配置。
 
 ## 使用方法
 
 ### Chat 模式
 
-点击左侧功能区的机器人图标，或运行 **Ask Copilot: Open Chat** 打开侧边栏。输入问题并选择 **Send**。回复会流式写入当前会话，选择 **Stop** 可取消当前请求。
+点击左侧功能区的机器人图标，或运行 **Vault Loom: Open Chat** 打开侧边栏。输入问题并选择 **Send**。回复会流式写入当前会话，选择 **Stop** 可取消当前请求。
 
 上下文预览会显示本次附加的选中文本、当前笔记、关键词匹配或语义匹配。组成提示词前，插件会根据配置的预算估算并裁剪上下文。
 
@@ -89,17 +90,17 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 
 ### 编辑命令
 
-| 命令                                  | 结果                           |
-| ------------------------------------- | ------------------------------ |
-| `Ask Copilot: Explain Selection`      | 为选中文本生成解释并插入编辑器 |
-| `Ask Copilot: Rewrite Selection`      | 用改写结果替换选中文本         |
-| `Ask Copilot: Summarize Current Note` | 在活动编辑器中插入当前笔记摘要 |
+| 命令                                 | 结果                           |
+| ------------------------------------ | ------------------------------ |
+| `Vault Loom: Explain Selection`      | 为选中文本生成解释并插入编辑器 |
+| `Vault Loom: Rewrite Selection`      | 用改写结果替换选中文本         |
+| `Vault Loom: Summarize Current Note` | 在活动编辑器中插入当前笔记摘要 |
 
 运行命令本身即为授权本次编辑器改动的明确操作。如果请求失败，命令不会写入生成内容。
 
 ### Agent 模式
 
-在 Copilot 侧边栏选择 **Agent**，允许模型请求已注册的工具。Agent 按顺序执行且轮次受限，工具活动会保留在聊天记录中。
+在 Vault Loom 侧边栏选择 **Agent**，允许模型请求已注册的工具。Agent 按顺序执行且轮次受限，工具活动会保留在聊天记录中。
 
 | 工具                | 权限 | 行为                                      |
 | ------------------- | ---- | ----------------------------------------- |
@@ -135,14 +136,14 @@ npm run dev
 npm run verify
 ```
 
-`npm run verify` 会检查格式、代码规范、TypeScript、生产构建和单元测试。本地 Obsidian 冒烟测试独立进行，可通过 `npm run deploy:test` 准备测试插件。
+`npm run verify` 会检查格式、代码规范、TypeScript、生产构建、单元测试、发布元数据和必需的 Release 产物。本地 Obsidian 冒烟测试独立进行，可通过 `npm run deploy:test` 准备测试插件。
 
 代码库将 UI、Provider 执行、Obsidian Adapter、结构化上下文、Prompt 组合、检索和工具拆分为独立模块。详情参见[实现计划](docs/copilot-for-obsidian-implementation-plan.md)、[阶段状态](docs/stage-status.md)和[架构决策](docs/architecture-decisions.md)。
 
 ## 发布状态
 
-规划中的实现阶段已经全部完成，但市场发布准备仍在进行。提交 Obsidian 社区插件目录前，还将完成仓库元数据、最终插件 ID、许可证文件、版本兼容映射、Release 产物和移动端验证。
+Vault Loom 尚未上架 Obsidian 社区插件市场。版本 1.0.0 所需的仓库元数据、许可证、版本兼容映射、发布检查和基于标签生成 Draft Release 的工作流已经准备完成。桌面端冒烟测试、发布生成的 GitHub Release，以及首次提交社区目录仍需人工完成。详情参见[发布指南](docs/releasing.md)。
 
 ## 许可证
 
-`package.json` 已将项目声明为 MIT License。市场发布前会在仓库根目录补充 `LICENSE` 文件。
+Vault Loom 使用 [MIT License](LICENSE)。

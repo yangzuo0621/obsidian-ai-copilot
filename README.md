@@ -1,8 +1,8 @@
-# Obsidian AI Copilot
+# Vault Loom
 
 [简体中文](README.zh-CN.md)
 
-An AI assistant for Obsidian that combines streaming chat, note-aware context, vault retrieval, editing commands, and a confirmation-gated agent mode.
+Weave your vault into useful AI context. Vault Loom combines streaming chat, note-aware retrieval, editing commands, and a confirmation-gated agent mode for Obsidian.
 
 > [!IMPORTANT]
 > This plugin is in pre-release development and is not yet available in the Obsidian Community Plugins directory. The current installation method is manual.
@@ -21,9 +21,10 @@ An AI assistant for Obsidian that combines streaming chat, note-aware context, v
 
 ## Requirements and compatibility
 
-- Obsidian 1.5.0 or later.
+- Desktop Obsidian 1.13.1 or later.
 - An OpenAI-compatible endpoint and any credentials required by that endpoint.
-- Desktop Obsidian is the primary development and test target. The manifest permits mobile installation, but mobile behavior has not yet been fully verified.
+
+The first public release is desktop-only. Mobile support may be enabled after the complete workflow has been verified on Obsidian mobile.
 
 An endpoint may support chat completions without supporting streaming, tool calls, or embeddings. Chat mode only requires compatible chat completions; Agent mode requires tool-calling support, and semantic retrieval requires an embeddings endpoint.
 
@@ -46,11 +47,11 @@ Community Plugins installation will be documented after the plugin has been acce
 3. Create a plugin folder inside your vault:
 
    ```text
-   <vault>/.obsidian/plugins/obsidian-ai-copilot/
+   <vault>/.obsidian/plugins/vault-loom/
    ```
 
 4. Copy `main.js`, `manifest.json`, and `styles.css` into that folder.
-5. Reload Obsidian, open **Settings → Community plugins**, and enable **Obsidian AI Copilot**.
+5. Reload Obsidian, open **Settings → Community plugins**, and enable **Vault Loom**.
 
 For a development vault, set `OBSIDIAN_PLUGINS_DIR` in `.env.local` and run `npm run deploy:test`. You can also pass the destination directly:
 
@@ -60,7 +61,7 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 
 ## Configuration
 
-Open **Settings → Obsidian AI Copilot** and configure:
+Open **Settings → Vault Loom** and configure:
 
 | Setting                     | Purpose                                        | Default                     |
 | --------------------------- | ---------------------------------------------- | --------------------------- |
@@ -75,13 +76,13 @@ Open **Settings → Obsidian AI Copilot** and configure:
 | Include vault search        | Attach keyword-matched note snippets           | On                          |
 | Include embedding retrieval | Index and retrieve semantically related chunks | Off                         |
 
-Use **Ask Copilot: Test Provider** from the command palette to check the chat configuration.
+Use **Vault Loom: Test Provider** from the command palette to check the chat configuration.
 
 ## Usage
 
 ### Chat
 
-Open the sidebar with the ribbon bot icon or **Ask Copilot: Open Chat**. Enter a prompt and select **Send**. Responses stream into the active session, and **Stop** cancels the current request.
+Open the sidebar with the ribbon bot icon or **Vault Loom: Open Chat**. Enter a prompt and select **Send**. Responses stream into the active session, and **Stop** cancels the current request.
 
 The context preview shows which selection, current note, keyword matches, or semantic matches were attached. Context is estimated and trimmed to the configured budget before prompt composition.
 
@@ -89,17 +90,17 @@ Chat sessions are stored in Obsidian plugin data and restored after the plugin r
 
 ### Editing commands
 
-| Command                               | Result                                       |
-| ------------------------------------- | -------------------------------------------- |
-| `Ask Copilot: Explain Selection`      | Inserts an explanation for the selected text |
-| `Ask Copilot: Rewrite Selection`      | Replaces the selected text with a rewrite    |
-| `Ask Copilot: Summarize Current Note` | Inserts a summary into the active editor     |
+| Command                              | Result                                       |
+| ------------------------------------ | -------------------------------------------- |
+| `Vault Loom: Explain Selection`      | Inserts an explanation for the selected text |
+| `Vault Loom: Rewrite Selection`      | Replaces the selected text with a rewrite    |
+| `Vault Loom: Summarize Current Note` | Inserts a summary into the active editor     |
 
 Running one of these commands is the explicit action that authorizes its editor change. If the request fails, the command does not write generated text.
 
 ### Agent mode
 
-Select **Agent** in the Copilot sidebar to allow the model to request registered tools. Agent execution is sequential and bounded, and tool activity remains visible in the conversation.
+Select **Agent** in the Vault Loom sidebar to allow the model to request registered tools. Agent execution is sequential and bounded, and tool activity remains visible in the conversation.
 
 | Tool                | Access | Behavior                                               |
 | ------------------- | ------ | ------------------------------------------------------ |
@@ -135,14 +136,14 @@ Before submitting a change, run the same automated quality gate used by the proj
 npm run verify
 ```
 
-`npm run verify` checks formatting, linting, TypeScript, the production build, and unit tests. Local Obsidian smoke testing is separate and can be prepared with `npm run deploy:test`.
+`npm run verify` checks formatting, linting, TypeScript, the production build, unit tests, release metadata, and required release assets. Local Obsidian smoke testing is separate and can be prepared with `npm run deploy:test`.
 
 The codebase keeps UI, provider execution, Obsidian adapters, structured context, prompt composition, retrieval, and tools in separate modules. See the [implementation plan](docs/copilot-for-obsidian-implementation-plan.md), [stage status](docs/stage-status.md), and [architecture decisions](docs/architecture-decisions.md) for details.
 
 ## Release status
 
-All planned implementation stages are complete, but marketplace release preparation is still in progress. Repository metadata, the final plugin ID, licensing files, version compatibility mapping, release artifacts, and mobile verification will be finalized before submission to the Obsidian Community Plugins directory.
+Vault Loom is not yet listed in the Obsidian Community Plugins directory. Repository metadata, licensing, version compatibility mapping, release validation, and a tag-driven Draft Release workflow are prepared for version 1.0.0. A desktop smoke test, publication of the generated GitHub release, and the initial directory submission remain manual release steps. See the [release guide](docs/releasing.md).
 
 ## License
 
-The package is declared as MIT-licensed. A root `LICENSE` file will be added before marketplace submission.
+Vault Loom is available under the [MIT License](LICENSE).
