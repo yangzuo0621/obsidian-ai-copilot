@@ -1,3 +1,5 @@
+import { formatHttpErrorBody, parseHttpResponseBody } from "../providers/http";
+
 export interface EmbeddingProvider {
   embed(input: string): Promise<number[]>;
   embedMany(inputs: string[]): Promise<number[][]>;
@@ -48,9 +50,9 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
       }),
     });
 
-    const responseBody: unknown = await parseResponseBody(response);
+    const responseBody = await parseHttpResponseBody(response);
     if (!response.ok) {
-      throw new Error(`Embedding request failed with HTTP ${response.status}: ${formatErrorBody(responseBody)}`);
+      throw new Error(`Embedding request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 
     if (!isEmbeddingResponse(responseBody) || !responseBody.data) {
@@ -93,35 +95,10 @@ function validateEmbeddingRequest(baseUrl: string, model: string, inputs: string
   }
 }
 
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const text = await response.text();
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return text;
-  }
-}
-
 function isEmbeddingResponse(value: unknown): value is OpenAIEmbeddingResponse {
   return typeof value === "object" && value !== null;
 }
 
 function isNumberArray(value: unknown): value is number[] {
   return Array.isArray(value) && value.every((item) => typeof item === "number");
-}
-
-function formatErrorBody(responseBody: unknown): string {
-  if (typeof responseBody === "string") {
-    return responseBody;
-  }
-
-  try {
-    return JSON.stringify(responseBody);
-  } catch {
-    return "Unable to serialize error response.";
-  }
 }
