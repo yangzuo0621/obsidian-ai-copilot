@@ -2,7 +2,6 @@ import type { TFile } from "obsidian";
 
 import type { EmbeddingProvider } from "./EmbeddingProvider";
 import { hashContent, MarkdownChunker } from "./MarkdownChunker";
-import type { MarkdownChunk } from "./MarkdownChunker";
 import type { MarkdownFileReader } from "./SearchService";
 import type { PersistedVectorStoreData, VectorSearchResult } from "./VectorStore";
 import { VectorStore } from "./VectorStore";
@@ -89,17 +88,13 @@ export class EmbeddingIndexService {
 
   private async indexFile(file: TFile): Promise<void> {
     const content = await this.files.readMarkdownFile(file);
-    const contentHash = hashContent(content);
+    const sourceContentHash = hashContent(content);
     const existing = this.vectorStore.getByPath(file.path);
-    if (existing.length > 0 && existing.every((entry) => entry.chunk.contentHash === contentHash)) {
+    if (existing.length > 0 && existing.every((entry) => entry.sourceContentHash === sourceContentHash)) {
       return;
     }
 
-    const chunks = this.chunker.chunk(file.path, file.basename, content).map((chunk) => ({
-      ...chunk,
-      contentHash,
-      id: createContentStableChunkId(chunk, contentHash),
-    }));
+    const chunks = this.chunker.chunk(file.path, file.basename, content);
 
     this.vectorStore.removeByPath(file.path);
     if (chunks.length === 0) {
@@ -111,6 +106,7 @@ export class EmbeddingIndexService {
       chunks.map((chunk, index) => ({
         chunk,
         embedding: embeddings[index] ?? [],
+        sourceContentHash,
       })),
     );
   }
@@ -118,10 +114,6 @@ export class EmbeddingIndexService {
   private async persist(): Promise<void> {
     await this.saveData?.(this.vectorStore.toJSON());
   }
-}
-
-function createContentStableChunkId(chunk: MarkdownChunk, contentHash: string): string {
-  return `semantic-search:${chunk.path}:${chunk.lineStart}-${chunk.lineEnd}:${contentHash.slice(0, 8)}`;
 }
 
 function isMarkdownFile(file: TFile): boolean {

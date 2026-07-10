@@ -3,6 +3,7 @@ import type { MarkdownChunk } from "./MarkdownChunker";
 export interface VectorStoreEntry {
   chunk: MarkdownChunk;
   embedding: number[];
+  sourceContentHash?: string;
 }
 
 export interface PersistedVectorStoreData {
