@@ -6,6 +6,7 @@ import type { ChatMessage } from "../providers/types";
 import { PromptComposer } from "../prompts/PromptComposer";
 import type { CopilotSettings } from "../settings/types";
 import { StreamController } from "../streaming/StreamController";
+import { isAbortError } from "../streaming/isAbortError";
 
 import { createChatMessageRecord, updateSessionTitle } from "./ChatSession";
 import { ChatStore } from "./ChatStore";
@@ -333,10 +334,4 @@ function upsertToolActivity(
     next.push({ ...activity });
   }
   return next;
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException
-    ? error.name === "AbortError"
-    : error instanceof Error && error.name === "AbortError";
 }

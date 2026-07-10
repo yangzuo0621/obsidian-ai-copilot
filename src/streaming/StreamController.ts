@@ -1,6 +1,7 @@
 import type { CompletionRequest, LLMProvider } from "../providers/types";
 
 import { AbortManager } from "./AbortManager";
+import { isAbortError } from "./isAbortError";
 
 export interface StreamControllerCallbacks {
   onToken(token: string): void;
@@ -57,10 +58,4 @@ export class StreamController {
   abortAll(): void {
     this.abortManager.abortAll();
   }
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException
-    ? error.name === "AbortError"
-    : error instanceof Error && error.name === "AbortError";
 }
