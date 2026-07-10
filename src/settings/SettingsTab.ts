@@ -1,9 +1,9 @@
 import { PluginSettingTab, Setting } from "obsidian";
 
-import type ObsidianAICopilotPlugin from "../main";
+import type VaultLoomPlugin from "../main";
 
 export class CopilotSettingsTab extends PluginSettingTab {
-  constructor(private readonly plugin: ObsidianAICopilotPlugin) {
+  constructor(private readonly plugin: VaultLoomPlugin) {
     super(plugin.app, plugin);
   }
 
@@ -11,7 +11,7 @@ export class CopilotSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Obsidian AI Copilot" });
+    containerEl.createEl("h2", { text: "Vault Loom" });
 
     new Setting(containerEl)
       .setName("API key")

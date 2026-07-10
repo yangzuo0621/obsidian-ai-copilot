@@ -247,3 +247,24 @@ Tool calling adds a new trust boundary: provider output can request local action
 - Declined and failed tools return structured results to the provider rather than being hidden.
 - Tool activity is stored with assistant chat messages so the execution process remains visible after reload.
 - Obsidian APIs remain isolated in adapters and confirmation UI remains separate from tool business logic.
+
+## ADR-014: Publish as Vault Loom with Reproducible Release Checks
+
+Status: Accepted
+
+### Decision
+
+The public plugin name will be `Vault Loom`, with the stable marketplace id `vault-loom`. The first public release will be version `1.0.0`, require Obsidian `1.13.1`, and be marked desktop-only until the complete workflow passes mobile testing. Tag-based GitHub Actions will verify the repository, validate version alignment, attest build output, and create a Draft Release containing the three Obsidian plugin assets.
+
+### Reason
+
+The development id contained `obsidian`, which is not accepted for new Community Plugins submissions, while the generic `AI Copilot` name was already occupied. A stable identity must be chosen before the first public release because changing the plugin id later would create a separate installation. Draft releases preserve a manual inspection boundary before public distribution.
+
+### Consequences
+
+- `manifest.json`, package metadata, UI copy, commands, documentation, and deployment use the Vault Loom identity.
+- `versions.json` maps every released plugin version to its minimum supported Obsidian version.
+- Release tags have no `v` prefix and exactly match `manifest.json`.
+- `npm run verify` checks required root files, release assets, and version alignment after building.
+- GitHub Releases contain `main.js`, `manifest.json`, and `styles.css`.
+- Mobile installation remains disabled until a documented mobile smoke test passes.

@@ -2,9 +2,15 @@ import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-const pluginId = "obsidian-ai-copilot";
 const requiredFiles = ["main.js", "manifest.json", "styles.css"];
 const rootDir = process.cwd();
+
+const manifest = JSON.parse(await readFile(path.join(rootDir, "manifest.json"), "utf8"));
+const pluginId = manifest.id;
+
+if (typeof pluginId !== "string" || !pluginId.trim()) {
+  throw new Error("manifest.json must define a non-empty plugin id.");
+}
 
 async function readLocalEnv() {
   const envPath = path.join(rootDir, ".env.local");

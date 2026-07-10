@@ -74,7 +74,7 @@ export class CopilotView extends ItemView {
     this.rootEl = contentEl.createDiv({ cls: "obsidian-ai-copilot-root" });
 
     const headerEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-header" });
-    headerEl.createDiv({ cls: "obsidian-ai-copilot-heading", text: "AI Copilot" });
+    headerEl.createDiv({ cls: "obsidian-ai-copilot-heading", text: "Vault Loom" });
     this.titleEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-title" });
     const sessionControlsEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-controls" });
     this.sessionSelectEl = sessionControlsEl.createEl("select", {

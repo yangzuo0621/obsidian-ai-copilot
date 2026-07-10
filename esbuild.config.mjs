@@ -5,7 +5,7 @@ const production = process.argv[2] === "production";
 
 const context = await esbuild.context({
   banner: {
-    js: "/* Obsidian AI Copilot */",
+    js: "/* Vault Loom */",
   },
   bundle: true,
   entryPoints: ["src/main.ts"],
