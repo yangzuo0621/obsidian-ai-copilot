@@ -1,22 +1,11 @@
 import type { Editor } from "obsidian";
 
-import type { ContextBlock } from "../context/types";
+import type { ContextBlockBuilder } from "../context/types";
 import type { EditorAdapter } from "../obsidian/EditorAdapter";
 import { createProvider } from "../providers/ProviderFactory";
 import { PromptComposer } from "../prompts/PromptComposer";
 import type { PromptMode } from "../prompts/commandPrompts";
 import type { CopilotSettings } from "../settings/types";
-
-interface ContextBuilderLike {
-  build(options: {
-    includeCurrentFile: boolean;
-    includeSelection: boolean;
-    includeVaultSearch: boolean;
-    includeEmbeddingRetrieval: boolean;
-    tokenBudget: number;
-    userInput: string;
-  }): Promise<ContextBlock[]>;
-}
 
 export interface EditingCommandResult {
   content: string;
@@ -29,7 +18,7 @@ export class EditingCommandService {
 
   constructor(
     private readonly getSettings: () => CopilotSettings,
-    private readonly contextBuilder: ContextBuilderLike,
+    private readonly contextBuilder: ContextBlockBuilder,
     private readonly editorAdapter: EditorAdapter,
   ) {}
 

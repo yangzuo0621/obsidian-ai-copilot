@@ -32,6 +32,10 @@ export interface ContextBuildOptions {
   userInput: string;
 }
 
+export interface ContextBlockBuilder {
+  build(options: ContextBuildOptions): Promise<ContextBlock[]>;
+}
+
 export interface ContextSource {
   collect(): Promise<ContextBlock | null>;
 }
