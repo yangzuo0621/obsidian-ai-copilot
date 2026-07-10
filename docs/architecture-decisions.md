@@ -221,6 +221,7 @@ The embedding index belongs to the plugin and should not create or modify user M
 ### Consequences
 
 - Semantic retrieval can rebuild stale entries from Markdown files when needed.
+- Chunk IDs and chunk hashes are derived from chunk content, while a separate source-content hash detects stale files.
 - Markdown modify, delete, and rename events update only plugin index data.
 - The index may make plugin data larger for big vaults; a future stage may move the vector store to a separate plugin-owned file if size or performance requires it.
 - Embedding retrieval remains opt-in because indexing can make network requests to the configured embedding provider.
