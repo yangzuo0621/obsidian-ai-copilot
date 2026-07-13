@@ -1,5 +1,5 @@
-import { ItemView, Notice } from "obsidian";
-import type { WorkspaceLeaf } from "obsidian";
+import { ItemView, Modal, Notice } from "obsidian";
+import type { App, WorkspaceLeaf } from "obsidian";
 
 import type { ChatService } from "../chat/ChatService";
 import type { ChatMessageRecord, ChatMode, ChatState, ToolActivityRecord } from "../chat/types";
@@ -141,10 +141,7 @@ export class CopilotView extends ItemView {
         return;
       }
 
-      const shouldDelete = confirm(`Delete "${state.session.title}"? This only removes the saved chat history.`);
-      if (shouldDelete) {
-        void this.chatService.deleteSession(state.activeSessionId);
-      }
+      void this.confirmAndDeleteActiveSession(state);
     });
 
     this.registerDomEvent(this.modeSelectEl, "change", () => {
@@ -364,6 +361,22 @@ export class CopilotView extends ItemView {
     }
   }
 
+  private async confirmAndDeleteActiveSession(state: ChatState): Promise<void> {
+    const shouldDelete = await confirmDeleteSession(this.app, state.session.title);
+    if (shouldDelete) {
+      await this.deleteActiveSession(state.activeSessionId);
+    }
+  }
+
+  private async deleteActiveSession(sessionId: string): Promise<void> {
+    try {
+      await this.chatService.deleteSession(sessionId);
+    } finally {
+      this.updateComposerState();
+      this.focusComposer();
+    }
+  }
+
   private updateComposerState(): void {
     const isSending = this.currentState?.isSending ?? false;
     const hasInput = this.textareaEl.value.trim().length > 0;
@@ -377,6 +390,22 @@ export class CopilotView extends ItemView {
     this.sendButtonEl.setText(isSending ? "Sending..." : "Send");
     this.stopButtonEl.disabled = !isSending;
     this.stopButtonEl.toggleClass("is-hidden", !isSending);
+  }
+
+  private focusComposer(): void {
+    const focus = () => {
+      if (!this.textareaEl.disabled) {
+        this.app.workspace.setActiveLeaf(this.leaf, { focus: true });
+        this.textareaEl.click();
+        this.textareaEl.focus({ preventScroll: true });
+        const cursorPosition = this.textareaEl.value.length;
+        this.textareaEl.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    };
+
+    for (const delay of [0, 50, 150, 300]) {
+      setTimeout(focus, delay);
+    }
   }
 }
 
@@ -392,5 +421,59 @@ function formatJson(value: string): string {
     return JSON.stringify(JSON.parse(value) as unknown, null, 2);
   } catch {
     return value;
+  }
+}
+
+function confirmDeleteSession(app: App, title: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    new DeleteSessionConfirmationModal(app, title, resolve).open();
+  });
+}
+
+class DeleteSessionConfirmationModal extends Modal {
+  private resolved = false;
+
+  constructor(
+    app: App,
+    private readonly sessionTitle: string,
+    private readonly resolve: (confirmed: boolean) => void,
+  ) {
+    super(app);
+  }
+
+  override onOpen(): void {
+    this.titleEl.setText("Delete chat session");
+    this.contentEl.createEl("p", {
+      text: `Delete "${this.sessionTitle}"? This only removes the saved chat history.`,
+    });
+
+    const actionsEl = this.contentEl.createDiv({ cls: "vault-loom-confirm-actions" });
+    const cancelButtonEl = actionsEl.createEl("button", { text: "Cancel" });
+    const deleteButtonEl = actionsEl.createEl("button", {
+      cls: "mod-warning",
+      text: "Delete",
+    });
+
+    cancelButtonEl.addEventListener("click", () => this.finish(false));
+    deleteButtonEl.addEventListener("click", () => this.finish(true));
+    deleteButtonEl.focus();
+  }
+
+  override onClose(): void {
+    this.contentEl.empty();
+    if (!this.resolved) {
+      this.resolved = true;
+      this.resolve(false);
+    }
+  }
+
+  private finish(confirmed: boolean): void {
+    if (this.resolved) {
+      return;
+    }
+
+    this.resolved = true;
+    this.resolve(confirmed);
+    this.close();
   }
 }
