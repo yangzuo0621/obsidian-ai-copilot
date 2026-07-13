@@ -35,6 +35,7 @@ interface OpenAIChatCompletionChunk {
           name?: string;
           arguments?: string;
         };
+        extra_content?: unknown;
       }>;
     };
     finish_reason?: string | null;
@@ -220,6 +221,10 @@ class StreamAccumulator {
           function: { name: "", arguments: "" },
         };
         existing.id = delta.id ?? existing.id;
+        if (delta.type === "function") {
+          existing.type = delta.type;
+        }
+        preserveGeminiThoughtSignature(existing, delta.extra_content);
         existing.function.name += delta.function?.name ?? "";
         existing.function.arguments += delta.function?.arguments ?? "";
         this.toolCalls.set(index, existing);
@@ -237,6 +242,32 @@ class StreamAccumulator {
       finishReason: this.finishReason,
     };
   }
+}
+
+function preserveGeminiThoughtSignature(target: ToolCall, extraContent: unknown): void {
+  if (!hasGeminiThoughtSignature(extraContent)) {
+    return;
+  }
+
+  target.extra_content = {
+    google: {
+      thought_signature: extraContent.google.thought_signature,
+    },
+  };
+}
+
+function hasGeminiThoughtSignature(value: unknown): value is { google: { thought_signature: string } } {
+  if (typeof value !== "object" || value === null || !("google" in value)) {
+    return false;
+  }
+
+  const google = value.google;
+  return (
+    typeof google === "object" &&
+    google !== null &&
+    "thought_signature" in google &&
+    typeof google.thought_signature === "string"
+  );
 }
 
 function extractAssistantContent(responseBody: unknown): string | null {
@@ -261,11 +292,7 @@ function serializeMessages(messages: ChatMessage[]): Array<Record<string, unknow
       return {
         role: message.role,
         content: message.content,
-        tool_calls: message.toolCalls?.map((call) => ({
-          id: call.id,
-          type: call.type,
-          function: call.function,
-        })),
+        tool_calls: message.toolCalls?.map(serializeToolCall),
       };
     }
 
@@ -279,4 +306,16 @@ function serializeMessages(messages: ChatMessage[]): Array<Record<string, unknow
 
     return { role: message.role, content: message.content };
   });
+}
+
+function serializeToolCall(call: ToolCall): Record<string, unknown> {
+  return {
+    id: call.id,
+    type: call.type,
+    function: {
+      name: call.function.name,
+      arguments: call.function.arguments,
+    },
+    ...(call.extra_content ? { extra_content: call.extra_content } : {}),
+  };
 }

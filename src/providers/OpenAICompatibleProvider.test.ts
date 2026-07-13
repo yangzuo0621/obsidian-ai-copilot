@@ -171,6 +171,148 @@ describe("OpenAICompatibleProvider", () => {
     });
   });
 
+  it("preserves provider-specific streamed tool call metadata", async () => {
+    const body = createStream([
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","ignored_provider_field":"drop-me","extra_content":{"google":{"thought_signature":"gemini-signature"}},"function":{"name":"read_","arguments":""}}]}}]}\n\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note.md\\"}"}}]},"finish_reason":"tool_calls"}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 200 })));
+    const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
+
+    const result = await provider.stream(
+      {
+        model: "test-model",
+        messages: [{ role: "user", content: "Read note" }],
+        tools: [
+          {
+            type: "function",
+            function: { name: "read_note", description: "Read note", parameters: { type: "object" } },
+          },
+        ],
+      },
+      { onToken: vi.fn() },
+    );
+
+    expect(result.toolCalls).toEqual([
+      {
+        id: "call-1",
+        type: "function",
+        extra_content: {
+          google: {
+            thought_signature: "gemini-signature",
+          },
+        },
+        function: {
+          name: "read_note",
+          arguments: '{"path":"note.md"}',
+        },
+      },
+    ]);
+  });
+
+  it("serializes assistant tool call metadata for provider continuation", async () => {
+    const body = createStream([
+      'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const fetchMock = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
+
+    await provider.stream(
+      {
+        model: "test-model",
+        messages: [
+          {
+            role: "assistant",
+            content: null,
+            toolCalls: [
+              {
+                id: "call-1",
+                type: "function",
+                extra_content: {
+                  google: {
+                    thought_signature: "gemini-signature",
+                  },
+                },
+                function: {
+                  name: "read_note",
+                  arguments: '{"path":"note.md"}',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      { onToken: vi.fn() },
+    );
+
+    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(requestBody.messages[0].tool_calls).toEqual([
+      {
+        id: "call-1",
+        type: "function",
+        extra_content: {
+          google: {
+            thought_signature: "gemini-signature",
+          },
+        },
+        function: {
+          name: "read_note",
+          arguments: '{"path":"note.md"}',
+        },
+      },
+    ]);
+  });
+
+  it("does not serialize arbitrary provider-specific tool call metadata", async () => {
+    const body = createStream([
+      'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const fetchMock = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
+
+    await provider.stream(
+      {
+        model: "test-model",
+        messages: [
+          {
+            role: "assistant",
+            content: null,
+            toolCalls: [
+              {
+                id: "call-1",
+                type: "function",
+                ignored_provider_field: "drop-me",
+                function: {
+                  name: "read_note",
+                  arguments: '{"path":"note.md"}',
+                  ignored_function_field: "drop-me",
+                },
+              } as never,
+            ],
+          },
+        ],
+      },
+      { onToken: vi.fn() },
+    );
+
+    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(requestBody.messages[0].tool_calls).toEqual([
+      {
+        id: "call-1",
+        type: "function",
+        function: {
+          name: "read_note",
+          arguments: '{"path":"note.md"}',
+        },
+      },
+    ]);
+  });
+
   it("validates required request configuration before fetch", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
