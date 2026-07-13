@@ -4,9 +4,6 @@
 
 让整个 Vault 成为有用的 AI 上下文。Vault Loom 为 Obsidian 集成流式聊天、笔记感知检索、编辑命令，以及需要确认才能写入笔记的 Agent 模式。
 
-> [!IMPORTANT]
-> 本插件目前处于预发布开发阶段，尚未上架 Obsidian 社区插件市场，当前需要手动安装。
-
 ## 功能特性
 
 - 流式显示助手回复，并可停止正在进行的生成。
@@ -32,7 +29,7 @@
 
 ### 社区插件市场
 
-插件通过 Obsidian 社区目录审核后，将在此补充市场安装步骤。
+Vault Loom 已提交到 Obsidian 社区插件市场并等待审核。审核通过后，可在 Obsidian 的 **设置 → 第三方插件** 中安装。
 
 ### 从源码手动安装
 
@@ -142,7 +139,7 @@ npm run verify
 
 ## 发布状态
 
-Vault Loom 尚未上架 Obsidian 社区插件市场。版本 1.0.0 所需的仓库元数据、许可证、版本兼容映射、发布检查和基于标签生成 Draft Release 的工作流已经准备完成。桌面端冒烟测试、发布生成的 GitHub Release，以及首次提交社区目录仍需人工完成。详情参见[发布指南](docs/releasing.md)。
+Vault Loom `1.0.0` 已在 GitHub 发布，并已提交到 Obsidian 社区插件市场等待审核。发布流程参见[发布指南](docs/releasing.md)。
 
 ## 许可证
 
