@@ -21,7 +21,7 @@
 
 ## 运行要求与兼容性
 
-- 桌面版 Obsidian 1.13.1 或更高版本。
+- 桌面版 Obsidian 1.12.7 或更高版本。
 - OpenAI-compatible 接口，以及该接口所需的访问凭据。
 
 首个公开版本仅支持桌面端。完成 Obsidian 移动端完整流程验证后，再考虑启用移动端支持。
@@ -76,13 +76,13 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 | Include vault search        | 附加关键词匹配的笔记片段             | 开启                        |
 | Include embedding retrieval | 建立索引并检索语义相关分块           | 关闭                        |
 
-可以在命令面板运行 **Vault Loom: Test Provider** 检查聊天配置。
+可以在命令面板运行 **Test provider** 检查聊天配置。
 
 ## 使用方法
 
 ### Chat 模式
 
-点击左侧功能区的机器人图标，或运行 **Vault Loom: Open Chat** 打开侧边栏。输入问题并选择 **Send**。回复会流式写入当前会话，选择 **Stop** 可取消当前请求。
+点击左侧功能区的机器人图标，或在命令面板运行 **Open chat** 打开侧边栏。输入问题并选择 **Send**。回复会流式写入当前会话，选择 **Stop** 可取消当前请求。
 
 上下文预览会显示本次附加的选中文本、当前笔记、关键词匹配或语义匹配。组成提示词前，插件会根据配置的预算估算并裁剪上下文。
 
@@ -90,11 +90,11 @@ npm run deploy:test -- "<vault>/.obsidian/plugins"
 
 ### 编辑命令
 
-| 命令                                 | 结果                           |
-| ------------------------------------ | ------------------------------ |
-| `Vault Loom: Explain Selection`      | 为选中文本生成解释并插入编辑器 |
-| `Vault Loom: Rewrite Selection`      | 用改写结果替换选中文本         |
-| `Vault Loom: Summarize Current Note` | 在活动编辑器中插入当前笔记摘要 |
+| 命令                     | 结果                           |
+| ------------------------ | ------------------------------ |
+| `Explain selection`      | 为选中文本生成解释并插入编辑器 |
+| `Rewrite selection`      | 用改写结果替换选中文本         |
+| `Summarize current note` | 在活动编辑器中插入当前笔记摘要 |
 
 运行命令本身即为授权本次编辑器改动的明确操作。如果请求失败，命令不会写入生成内容。
 

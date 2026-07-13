@@ -254,11 +254,12 @@ Status: Accepted
 
 ### Decision
 
-The public plugin name will be `Vault Loom`, with the stable marketplace id `vault-loom`. The first public release will be version `1.0.0`, require Obsidian `1.13.1`, and be marked desktop-only until the complete workflow passes mobile testing. Tag-based GitHub Actions will verify the repository, validate version alignment, attest build output, and create a Draft Release containing the three Obsidian plugin assets.
+The public plugin name will be `Vault Loom`, with the stable marketplace id `vault-loom`. The first public release will be version `1.0.0`, require the current public Obsidian release `1.12.7`, and be marked desktop-only until the complete workflow passes mobile testing. Tag-based GitHub Actions will verify the repository, validate version alignment, attest build output, and create a Draft Release containing the three Obsidian plugin assets.
 
 ### Reason
 
 The development id contained `obsidian`, which is not accepted for new Community Plugins submissions, while the generic `AI Copilot` name was already occupied. A stable identity must be chosen before the first public release because changing the plugin id later would create a separate installation. Draft releases preserve a manual inspection boundary before public distribution.
+The compatibility floor uses a public Obsidian release so Community Plugin users do not need Catalyst access to install the first release.
 
 ### Consequences
 

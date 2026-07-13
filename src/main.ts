@@ -83,16 +83,8 @@ export default class VaultLoomPlugin extends Plugin {
     this.addSettingTab(new CopilotSettingsTab(this));
 
     this.addCommand({
-      id: "show-load-notice",
-      name: "Show load notice",
-      callback: () => {
-        new Notice("Vault Loom is loaded.");
-      },
-    });
-
-    this.addCommand({
-      id: "vault-loom-open-chat",
-      name: "Vault Loom: Open Chat",
+      id: "open-chat",
+      name: "Open chat",
       callback: async () => {
         await this.openCopilotViewWithNotice();
       },
@@ -103,8 +95,8 @@ export default class VaultLoomPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "vault-loom-test-provider",
-      name: "Vault Loom: Test Provider",
+      id: "test-provider",
+      name: "Test provider",
       callback: async () => {
         await this.testProvider();
       },
@@ -202,7 +194,6 @@ export default class VaultLoomPlugin extends Plugin {
         ],
       });
 
-      console.log("Vault Loom provider test response:", result);
       new Notice(`Provider test succeeded: ${result.content.slice(0, 120)}`);
     } catch (error) {
       console.error("Vault Loom provider test failed:", error);

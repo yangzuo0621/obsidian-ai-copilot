@@ -35,7 +35,7 @@ Local smoke verification depends on an Obsidian test vault and is not required i
 
 - [x] Stage 0: Project scaffold
 - [x] Stage 1: Settings and provider abstraction
-- [x] Stage 2: Copilot sidebar and basic chat
+- [x] Stage 2: Vault Loom sidebar and basic chat
 - [x] Stage 3: Streaming and abort
 - [x] Stage 4: Current note and selection context
 - [x] Stage 5: Editing commands
@@ -124,8 +124,7 @@ Manual smoke test steps:
 2. Restart or reload Obsidian.
 3. Open Settings -> Community plugins.
 4. Enable `Vault Loom`.
-5. Open the command palette and run `Show load notice`.
-6. Confirm a Notice appears.
+5. Confirm the plugin loads without an error notice.
 ```
 
 Local configuration:
@@ -143,7 +142,7 @@ npm run deploy:test -- "<test-vault>/.obsidian/plugins"
 
 ### Notes
 
-- Stage 0 initially used the development id `obsidian-ai-copilot`; marketplace preparation later changed it to `vault-loom` before the first public release.
+- Stage 0 initially used a development-only plugin id; marketplace preparation later changed it to `vault-loom` before the first public release.
 - Avoid introducing UI frameworks at this stage.
 - Avoid implementing any AI provider code in this stage.
 - Stage 0 uses the standard Obsidian plugin skeleton with npm, esbuild, and TypeScript.
@@ -151,6 +150,7 @@ npm run deploy:test -- "<test-vault>/.obsidian/plugins"
 - Automated verification should run before review: `npm install`, `npm run build`, `npm run deploy:test`, and `git status --short --branch`.
 - Manual Obsidian smoke test passed on 2026-07-06.
 - Review passed on 2026-07-06.
+- The scaffold-only load notice command was removed during marketplace preparation.
 
 ## Stage 1: Settings and Provider Abstraction
 
@@ -191,7 +191,7 @@ Add plugin settings and the first model provider abstraction.
 - Settings tab allows editing API key, base URL, model, temperature, and context token budget.
 - Provider logic is behind `LLMProvider` and does not depend on Obsidian APIs.
 - OpenAI-compatible provider can send a non-streaming chat completions request.
-- Command palette includes `Vault Loom: Test Provider`.
+- Command palette includes `Test provider`.
 
 ### Verification
 
@@ -213,7 +213,7 @@ Manual verification after copying to a vault plugin folder:
 ```txt
 Obsidian shows the plugin settings tab.
 Settings can be edited and persist after closing settings.
-Running `Vault Loom: Test Provider` sends one non-streaming provider request.
+Running `Test provider` sends one non-streaming provider request.
 The command shows a success or failure Notice.
 ```
 
@@ -224,13 +224,13 @@ The command shows a success or failure Notice.
 - The context token budget is stored for future stages but no note context is injected yet.
 - Streaming remains deferred to Stage 3.
 
-## Stage 2: Copilot Sidebar and Basic Chat
+## Stage 2: Vault Loom Sidebar and Basic Chat
 
 Status: completed
 
 ### Goal
 
-Add a usable Copilot sidebar with basic non-streaming chat.
+Add a usable Vault Loom sidebar with basic non-streaming chat.
 
 ### Scope
 
@@ -256,8 +256,8 @@ Add a usable Copilot sidebar with basic non-streaming chat.
 
 ### Completion Criteria
 
-- Command palette includes `Vault Loom: Open Chat`.
-- The Copilot sidebar can be opened from the command palette or ribbon icon.
+- Command palette includes `Open chat`.
+- The Vault Loom sidebar can be opened from the command palette or ribbon icon.
 - The sidebar renders an in-memory message list and composer.
 - Sending a message calls the configured provider through `ChatService.sendMessage()`.
 - The assistant response or provider error is displayed in the sidebar.
@@ -281,8 +281,8 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat` from the command palette.
-The ribbon icon opens the same Copilot sidebar.
+Obsidian can open `Open chat` from the command palette.
+The ribbon icon opens the same Vault Loom sidebar.
 Typing a message and clicking Send sends one non-streaming provider request.
 The user message and assistant response appear in the sidebar.
 Provider failures render as an error message in the sidebar and show a Notice.
@@ -326,7 +326,7 @@ Support token-by-token assistant responses and stop generation.
 
 - OpenAI-compatible provider can send streaming chat completions requests.
 - Streaming responses append assistant tokens incrementally.
-- Active streaming requests can be stopped through the Copilot sidebar.
+- Active streaming requests can be stopped through the Vault Loom sidebar.
 - Stopped requests restore the UI to an idle state and mark the assistant message as stopped.
 - Streaming and abort behavior are covered by focused unit tests.
 
@@ -348,7 +348,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat`.
+Obsidian can open `Open chat`.
 Typing a message streams the assistant response into the latest assistant message.
 Clicking Stop cancels the active request.
 After Stop, the composer returns to an idle state and the assistant message is marked Stopped.
@@ -409,7 +409,7 @@ Inject structured context from the current Obsidian editor.
 - Current file content is collected as structured context when there is no selection.
 - Context blocks pass through the configured context token budget before prompt composition.
 - Provider requests are composed by `PromptComposer` instead of ad hoc provider message assembly.
-- The Copilot sidebar shows a context preview for the context attached to the latest request.
+- The Vault Loom sidebar shows a context preview for the context attached to the latest request.
 - Context behavior is covered by focused unit tests.
 
 ### Verification
@@ -430,7 +430,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat`.
+Obsidian can open `Open chat`.
 Selecting text in the active Markdown editor shows Selection in the context preview after sending a chat message.
 Sending a chat message without selected text shows Current file in the context preview when an active note is open.
 The assistant response streams normally and Stop still cancels the active request.
@@ -477,9 +477,9 @@ Add Obsidian-native writing commands.
 
 ### Completion Criteria
 
-- Command palette includes `Vault Loom: Explain Selection`.
-- Command palette includes `Vault Loom: Rewrite Selection`.
-- Command palette includes `Vault Loom: Summarize Current Note`.
+- Command palette includes `Explain selection`.
+- Command palette includes `Rewrite selection`.
+- Command palette includes `Summarize current note`.
 - Selection commands require active selected editor text.
 - Explain selection inserts the generated explanation through the editor adapter.
 - Rewrite selection replaces the current selection through the editor adapter.
@@ -505,10 +505,10 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can run `Vault Loom: Explain Selection` from the command palette when text is selected.
-Running `Vault Loom: Explain Selection` inserts an explanation into the active editor.
-Running `Vault Loom: Rewrite Selection` replaces the selected text with the rewritten result.
-Running `Vault Loom: Summarize Current Note` inserts a summary into the active editor.
+Obsidian can run `Explain selection` from the command palette when text is selected.
+Running `Explain selection` inserts an explanation into the active editor.
+Running `Rewrite selection` replaces the selected text with the rewritten result.
+Running `Summarize current note` inserts a summary into the active editor.
 Running a selection command without selected text shows a Notice and does not call the provider.
 Provider failures show a Notice and do not write generated text.
 ```
@@ -553,7 +553,7 @@ Persist and restore chat sessions.
 - Chat sessions are saved in Obsidian plugin data.
 - Plugin data stores settings and chat history without overwriting either section.
 - Plugin reload restores the active session and saved messages.
-- The Copilot sidebar can create, switch, and delete chat sessions.
+- The Vault Loom sidebar can create, switch, and delete chat sessions.
 - Session histories remain isolated from each other.
 - Streaming responses continue to update the session and message that started the request.
 - Chat persistence behavior is covered by focused unit tests.
@@ -576,7 +576,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat`.
+Obsidian can open `Open chat`.
 Sending a chat message saves it to the active session.
 Clicking New creates an empty session and switches to it.
 The session selector switches between saved sessions without mixing messages.
@@ -636,7 +636,7 @@ Add simple Vault-wide keyword search context.
 - Keyword search matches Markdown file names and note contents.
 - Search results are converted to `vault-search` context blocks with source paths and line ranges.
 - Search results pass through `ContextBudget` before prompt composition.
-- The Copilot sidebar context preview labels search results as Vault search.
+- The Vault Loom sidebar context preview labels search results as Vault search.
 - Vault search behavior is covered by focused unit tests.
 
 ### Verification
@@ -657,7 +657,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat`.
+Obsidian can open `Open chat`.
 With vault search enabled, asking about a keyword that appears in another Markdown note shows Vault search in the context preview.
 The preview shows the matching note path and line range.
 Disabling vault search in settings prevents vault search context from being attached.
@@ -721,7 +721,7 @@ Add semantic retrieval for larger vaults.
 - Embeddings are stored in a local plugin-data vector store with chunk metadata.
 - Chat context can include semantic retrieval blocks when embedding retrieval is enabled.
 - Semantic search results remain structured `ContextBlock` data and pass through `ContextBudget`.
-- The Copilot sidebar labels semantic retrieval context as Semantic search.
+- The Vault Loom sidebar labels semantic retrieval context as Semantic search.
 - Markdown file modify, delete, and rename events refresh or remove affected index entries.
 - Editing commands keep embedding retrieval disabled and remain scoped to explicit editor context.
 - Embedding retrieval behavior is covered by focused unit tests.
@@ -744,7 +744,7 @@ git status --short --branch
 Manual verification after copying to a vault plugin folder:
 
 ```txt
-Obsidian can open `Vault Loom: Open Chat`.
+Obsidian can open `Open chat`.
 With embedding retrieval enabled and an embedding model configured, asking about a semantically related topic shows Semantic search in the context preview.
 The preview shows the matching note path and line range.
 Editing or renaming a Markdown note refreshes the semantic index for that note.
@@ -822,7 +822,7 @@ Allow the assistant to call controlled Obsidian tools.
 - Agent mode can call `search_vault` and `read_note` and return results to the provider for another round.
 - `create_note`, `append_to_note`, and `replace_selection` cannot run before explicit user confirmation.
 - Declined writes do not modify the vault and are returned to the model as declined tool results.
-- Tool activity is visible in the Copilot sidebar and survives chat persistence.
+- Tool activity is visible in the Vault Loom sidebar and survives chat persistence.
 - Stop cancels the active provider or agent request and prevents later tool rounds.
 - Agent execution stops at a fixed round limit.
 - Ordinary Chat mode remains the default and does not expose tools to the provider.
@@ -872,7 +872,7 @@ Status: automated preparation completed; manual release pending
 ### Scope
 
 - Adopt the public name `Vault Loom` and stable plugin id `vault-loom`.
-- Prepare version `1.0.0` with minimum Obsidian version `1.13.1`.
+- Prepare version `1.0.0` with minimum Obsidian version `1.12.7`.
 - Keep the first release desktop-only until mobile verification is complete.
 - Add the MIT license and `versions.json` compatibility mapping.
 - Add version alignment and required-asset release checks.

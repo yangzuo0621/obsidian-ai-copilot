@@ -2,7 +2,7 @@
   "id": "vault-loom",
   "name": "Vault Loom",
   "version": "1.0.0",
-  "minAppVersion": "1.13.1",
+  "minAppVersion": "1.12.7",
   "description": "Weave your vault into useful AI context for chat, retrieval, and confirmed note actions.",
   "author": "Zuo Yang",
   "authorUrl": "https://github.com/yangzuo0621",

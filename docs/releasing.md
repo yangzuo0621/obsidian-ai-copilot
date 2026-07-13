@@ -1,6 +1,6 @@
 # Releasing Vault Loom
 
-This checklist covers release preparation for the Obsidian Community Plugins directory. The first public release is version `1.0.0`, with plugin id `vault-loom` and minimum Obsidian version `1.13.1`.
+This checklist covers release preparation for the Obsidian Community Plugins directory. The first public release is version `1.0.0`, with plugin id `vault-loom` and minimum Obsidian version `1.12.7`.
 
 ## Automated release contract
 
@@ -23,8 +23,8 @@ For later releases, use `npm version patch`, `npm version minor`, or `npm versio
 ## Manual desktop smoke test
 
 1. Deploy the production build with `npm run deploy:test`.
-2. Reload desktop Obsidian 1.13.1 or later and enable Vault Loom.
-3. Confirm settings persist and `Vault Loom: Test Provider` succeeds.
+2. Reload desktop Obsidian 1.12.7 or later and enable Vault Loom.
+3. Confirm settings persist and `Test provider` succeeds.
 4. Confirm ordinary Chat streams, stops, and shows enabled context sources.
 5. Confirm chat sessions persist across a plugin reload.
 6. Confirm keyword search and opt-in embedding retrieval return source previews.
