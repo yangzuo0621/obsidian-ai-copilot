@@ -29,7 +29,7 @@ An endpoint may support chat completions without supporting streaming, tool call
 
 ### Community Plugins
 
-Vault Loom has been submitted to the Obsidian Community Plugins directory and is pending review. After approval, install it from **Settings → Community plugins** inside Obsidian.
+Vault Loom is available in the Obsidian Community Plugins directory. Install it from **Settings → Community plugins** inside Obsidian.
 
 ### Manual installation from source
 
@@ -139,7 +139,7 @@ The codebase keeps UI, provider execution, Obsidian adapters, structured context
 
 ## Release status
 
-Vault Loom `1.0.0` has been released on GitHub and submitted to the Obsidian Community Plugins directory for review. See the [release guide](docs/releasing.md) for the release process.
+Vault Loom is available in the Obsidian Community Plugins directory. The latest release is published on GitHub with the required Obsidian assets. See the [release guide](docs/releasing.md) for the release process.
 
 ## License
 
