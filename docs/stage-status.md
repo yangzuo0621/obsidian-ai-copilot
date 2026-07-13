@@ -867,7 +867,7 @@ Reloading the plugin restores completed tool activity in chat history while defa
 
 ## Marketplace Release Preparation
 
-Status: GitHub release published; Obsidian Community Plugins review pending
+Status: GitHub release published; Obsidian Community Plugins entry available
 
 ### Scope
 
@@ -894,7 +894,7 @@ Manual verification completed for the initial release:
 ```txt
 npm run deploy:test
 GitHub Release 1.0.0 published with main.js, manifest.json, and styles.css
-Obsidian Community Plugins entry published and automated review is pending
+Obsidian Community Plugins entry is available after automated review completion
 ```
 
 ### Notes
