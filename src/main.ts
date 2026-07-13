@@ -219,8 +219,8 @@ export default class VaultLoomPlugin extends Plugin {
     try {
       await this.activateCopilotView();
     } catch (error) {
-      console.error("Failed to open AI Copilot view:", error);
-      new Notice(`Failed to open AI Copilot: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Failed to open Vault Loom view:", error);
+      new Notice(`Failed to open Vault Loom: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

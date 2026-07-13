@@ -5,7 +5,7 @@ import type { ChatService } from "../chat/ChatService";
 import type { ChatMessageRecord, ChatMode, ChatState, ToolActivityRecord } from "../chat/types";
 import type { ContextBlockSummary } from "../context/types";
 
-export const COPILOT_VIEW_TYPE = "obsidian-ai-copilot-view";
+export const COPILOT_VIEW_TYPE = "vault-loom-view";
 
 export class CopilotView extends ItemView {
   private rootEl!: HTMLElement;
@@ -35,7 +35,7 @@ export class CopilotView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "AI Copilot";
+    return "Vault Loom";
   }
 
   getIcon(): string {
@@ -70,52 +70,52 @@ export class CopilotView extends ItemView {
   private buildLayout(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.addClass("obsidian-ai-copilot-view");
+    contentEl.addClass("vault-loom-view");
 
-    this.rootEl = contentEl.createDiv({ cls: "obsidian-ai-copilot-root" });
+    this.rootEl = contentEl.createDiv({ cls: "vault-loom-root" });
 
-    const headerEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-header" });
-    headerEl.createDiv({ cls: "obsidian-ai-copilot-heading", text: "Vault Loom" });
-    this.titleEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-title" });
-    const sessionControlsEl = headerEl.createDiv({ cls: "obsidian-ai-copilot-session-controls" });
+    const headerEl = this.rootEl.createDiv({ cls: "vault-loom-header" });
+    headerEl.createDiv({ cls: "vault-loom-heading", text: "Vault Loom" });
+    this.titleEl = headerEl.createDiv({ cls: "vault-loom-session-title" });
+    const sessionControlsEl = headerEl.createDiv({ cls: "vault-loom-session-controls" });
     this.sessionSelectEl = sessionControlsEl.createEl("select", {
-      cls: "obsidian-ai-copilot-session-select",
+      cls: "vault-loom-session-select",
       attr: {
         "aria-label": "Chat session",
       },
     });
     this.newSessionButtonEl = sessionControlsEl.createEl("button", {
-      cls: "obsidian-ai-copilot-session-new",
+      cls: "vault-loom-session-new",
       text: "New",
     });
     this.deleteSessionButtonEl = sessionControlsEl.createEl("button", {
-      cls: "obsidian-ai-copilot-session-delete",
+      cls: "vault-loom-session-delete",
       text: "Delete",
     });
     this.modeSelectEl = sessionControlsEl.createEl("select", {
-      cls: "obsidian-ai-copilot-mode-select",
-      attr: { "aria-label": "Copilot mode" },
+      cls: "vault-loom-mode-select",
+      attr: { "aria-label": "Vault Loom mode" },
     });
     this.modeSelectEl.createEl("option", { text: "Chat", value: "chat" });
     this.modeSelectEl.createEl("option", { text: "Agent", value: "agent" });
-    this.contextPreviewEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-context-preview" });
+    this.contextPreviewEl = this.rootEl.createDiv({ cls: "vault-loom-context-preview" });
 
-    this.messageListEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-messages" });
+    this.messageListEl = this.rootEl.createDiv({ cls: "vault-loom-messages" });
 
-    const composerEl = this.rootEl.createDiv({ cls: "obsidian-ai-copilot-composer" });
+    const composerEl = this.rootEl.createDiv({ cls: "vault-loom-composer" });
     this.textareaEl = composerEl.createEl("textarea", {
-      cls: "obsidian-ai-copilot-input",
+      cls: "vault-loom-input",
       attr: {
         placeholder: "Ask a question...",
         rows: "3",
       },
     });
     this.sendButtonEl = composerEl.createEl("button", {
-      cls: "mod-cta obsidian-ai-copilot-send",
+      cls: "mod-cta vault-loom-send",
       text: "Send",
     });
     this.stopButtonEl = composerEl.createEl("button", {
-      cls: "obsidian-ai-copilot-stop",
+      cls: "vault-loom-stop",
       text: "Stop",
     });
 
@@ -171,7 +171,7 @@ export class CopilotView extends ItemView {
 
     if (state.session.messages.length === 0) {
       this.messageListEl.createDiv({
-        cls: "obsidian-ai-copilot-empty",
+        cls: "vault-loom-empty",
         text: "Start a chat from here. Responses stream in as they are generated.",
       });
     } else {
@@ -207,23 +207,23 @@ export class CopilotView extends ItemView {
 
     if (contextBlocks.length === 0) {
       this.contextPreviewEl.createDiv({
-        cls: "obsidian-ai-copilot-context-empty",
+        cls: "vault-loom-context-empty",
         text: "No note context attached.",
       });
       return;
     }
 
     const detailsEl = this.contextPreviewEl.createEl("details", {
-      cls: "obsidian-ai-copilot-context-details",
+      cls: "vault-loom-context-details",
     });
     detailsEl.open = this.isContextPreviewExpanded;
 
     const summaryEl = detailsEl.createEl("summary", {
-      cls: "obsidian-ai-copilot-context-summary",
+      cls: "vault-loom-context-summary",
       text: `Context used (${contextBlocks.length})`,
     });
     summaryEl.createSpan({
-      cls: "obsidian-ai-copilot-context-summary-hint",
+      cls: "vault-loom-context-summary-hint",
       text: this.isContextPreviewExpanded ? "Hide" : "Show",
     });
 
@@ -231,31 +231,31 @@ export class CopilotView extends ItemView {
       this.isContextPreviewExpanded = detailsEl.open;
     });
 
-    const listEl = detailsEl.createDiv({ cls: "obsidian-ai-copilot-context-list" });
+    const listEl = detailsEl.createDiv({ cls: "vault-loom-context-list" });
     for (const block of contextBlocks) {
       this.renderContextBlock(listEl, block);
     }
   }
 
   private renderContextBlock(parentEl: HTMLElement, block: ContextBlockSummary): void {
-    const blockEl = parentEl.createDiv({ cls: "obsidian-ai-copilot-context-block" });
+    const blockEl = parentEl.createDiv({ cls: "vault-loom-context-block" });
     blockEl.createSpan({
-      cls: "obsidian-ai-copilot-context-type",
+      cls: "vault-loom-context-type",
       text: this.formatContextType(block),
     });
     blockEl.createSpan({
-      cls: "obsidian-ai-copilot-context-title",
+      cls: "vault-loom-context-title",
       text: block.sourcePath ?? block.title,
     });
     const lineLabel = this.formatContextLineLabel(block);
     if (lineLabel) {
       blockEl.createSpan({
-        cls: "obsidian-ai-copilot-context-lines",
+        cls: "vault-loom-context-lines",
         text: lineLabel,
       });
     }
     blockEl.createSpan({
-      cls: "obsidian-ai-copilot-context-tokens",
+      cls: "vault-loom-context-tokens",
       text: `~${block.tokenEstimate} tokens`,
     });
   }
@@ -290,36 +290,36 @@ export class CopilotView extends ItemView {
 
   private renderMessage(message: ChatMessageRecord): void {
     const messageEl = this.messageListEl.createDiv({
-      cls: `obsidian-ai-copilot-message obsidian-ai-copilot-message-${message.role}`,
+      cls: `vault-loom-message vault-loom-message-${message.role}`,
     });
 
-    const metaEl = messageEl.createDiv({ cls: "obsidian-ai-copilot-message-meta" });
+    const metaEl = messageEl.createDiv({ cls: "vault-loom-message-meta" });
     metaEl.createSpan({ text: message.role === "user" ? "You" : "Assistant" });
 
     if (message.status === "pending") {
-      metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Pending" });
+      metaEl.createSpan({ cls: "vault-loom-status", text: "Pending" });
     } else if (message.status === "streaming") {
-      metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Streaming" });
+      metaEl.createSpan({ cls: "vault-loom-status", text: "Streaming" });
     } else if (message.status === "aborted") {
-      metaEl.createSpan({ cls: "obsidian-ai-copilot-status", text: "Stopped" });
+      metaEl.createSpan({ cls: "vault-loom-status", text: "Stopped" });
     } else if (message.status === "error") {
-      metaEl.createSpan({ cls: "obsidian-ai-copilot-status obsidian-ai-copilot-status-error", text: "Error" });
+      metaEl.createSpan({ cls: "vault-loom-status vault-loom-status-error", text: "Error" });
     }
 
     messageEl.createDiv({
-      cls: "obsidian-ai-copilot-message-content",
+      cls: "vault-loom-message-content",
       text: message.content || (message.status === "streaming" ? "..." : ""),
     });
 
     if (message.error) {
       messageEl.createDiv({
-        cls: "obsidian-ai-copilot-message-error",
+        cls: "vault-loom-message-error",
         text: message.error,
       });
     }
 
     if (message.toolActivities?.length) {
-      const toolsEl = messageEl.createDiv({ cls: "obsidian-ai-copilot-tool-list" });
+      const toolsEl = messageEl.createDiv({ cls: "vault-loom-tool-list" });
       for (const activity of message.toolActivities) {
         this.renderToolActivity(toolsEl, activity);
       }
@@ -327,20 +327,20 @@ export class CopilotView extends ItemView {
   }
 
   private renderToolActivity(parentEl: HTMLElement, activity: ToolActivityRecord): void {
-    const activityEl = parentEl.createEl("details", { cls: "obsidian-ai-copilot-tool-activity" });
+    const activityEl = parentEl.createEl("details", { cls: "vault-loom-tool-activity" });
     const summaryEl = activityEl.createEl("summary");
-    summaryEl.createSpan({ cls: "obsidian-ai-copilot-tool-name", text: activity.toolName });
+    summaryEl.createSpan({ cls: "vault-loom-tool-name", text: activity.toolName });
     summaryEl.createSpan({
-      cls: `obsidian-ai-copilot-tool-status obsidian-ai-copilot-tool-status-${activity.status}`,
+      cls: `vault-loom-tool-status vault-loom-tool-status-${activity.status}`,
       text: formatToolStatus(activity.status),
     });
     activityEl.createEl("pre", {
-      cls: "obsidian-ai-copilot-tool-data",
+      cls: "vault-loom-tool-data",
       text: `Input\n${formatJson(activity.arguments)}`,
     });
     if (activity.result) {
       activityEl.createEl("pre", {
-        cls: "obsidian-ai-copilot-tool-data",
+        cls: "vault-loom-tool-data",
         text: `Result\n${formatJson(activity.result)}`,
       });
     }
@@ -360,7 +360,7 @@ export class CopilotView extends ItemView {
     const latestState = this.currentState;
     const latestMessage = latestState?.session.messages.at(-1);
     if (latestMessage?.status === "error" && latestMessage.error) {
-      new Notice(`Copilot request failed: ${latestMessage.error}`);
+      new Notice(`Vault Loom request failed: ${latestMessage.error}`);
     }
   }
 
