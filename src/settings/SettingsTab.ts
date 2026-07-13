@@ -11,7 +11,7 @@ export class CopilotSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName("Vault Loom").setHeading();
+    new Setting(containerEl).setName("Provider").setHeading();
 
     new Setting(containerEl)
       .setName("API key")
