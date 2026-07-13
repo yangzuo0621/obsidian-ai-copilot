@@ -21,7 +21,7 @@ Weave your vault into useful AI context. Vault Loom combines streaming chat, not
 
 ## Requirements and compatibility
 
-- Desktop Obsidian 1.13.1 or later.
+- Desktop Obsidian 1.12.7 or later.
 - An OpenAI-compatible endpoint and any credentials required by that endpoint.
 
 The first public release is desktop-only. Mobile support may be enabled after the complete workflow has been verified on Obsidian mobile.
@@ -76,13 +76,13 @@ Open **Settings → Vault Loom** and configure:
 | Include vault search        | Attach keyword-matched note snippets           | On                          |
 | Include embedding retrieval | Index and retrieve semantically related chunks | Off                         |
 
-Use **Vault Loom: Test Provider** from the command palette to check the chat configuration.
+Use **Test provider** from the command palette to check the chat configuration.
 
 ## Usage
 
 ### Chat
 
-Open the sidebar with the ribbon bot icon or **Vault Loom: Open Chat**. Enter a prompt and select **Send**. Responses stream into the active session, and **Stop** cancels the current request.
+Open the sidebar with the ribbon bot icon or **Open chat** from the command palette. Enter a prompt and select **Send**. Responses stream into the active session, and **Stop** cancels the current request.
 
 The context preview shows which selection, current note, keyword matches, or semantic matches were attached. Context is estimated and trimmed to the configured budget before prompt composition.
 
@@ -90,11 +90,11 @@ Chat sessions are stored in Obsidian plugin data and restored after the plugin r
 
 ### Editing commands
 
-| Command                              | Result                                       |
-| ------------------------------------ | -------------------------------------------- |
-| `Vault Loom: Explain Selection`      | Inserts an explanation for the selected text |
-| `Vault Loom: Rewrite Selection`      | Replaces the selected text with a rewrite    |
-| `Vault Loom: Summarize Current Note` | Inserts a summary into the active editor     |
+| Command                  | Result                                       |
+| ------------------------ | -------------------------------------------- |
+| `Explain selection`      | Inserts an explanation for the selected text |
+| `Rewrite selection`      | Replaces the selected text with a rewrite    |
+| `Summarize current note` | Inserts a summary into the active editor     |
 
 Running one of these commands is the explicit action that authorizes its editor change. If the request fails, the command does not write generated text.
 

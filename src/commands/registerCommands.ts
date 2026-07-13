@@ -5,24 +5,24 @@ import type { EditingCommandService } from "./EditingCommandService";
 
 export function registerEditingCommands(plugin: Plugin, service: EditingCommandService): void {
   plugin.addCommand({
-    id: "vault-loom-explain-selection",
-    name: "Vault Loom: Explain Selection",
+    id: "explain-selection",
+    name: "Explain selection",
     editorCallback: (editor) => {
       void runEditingCommand("Selection explained.", () => service.explainSelection(editor));
     },
   });
 
   plugin.addCommand({
-    id: "vault-loom-rewrite-selection",
-    name: "Vault Loom: Rewrite Selection",
+    id: "rewrite-selection",
+    name: "Rewrite selection",
     editorCallback: (editor) => {
       void runEditingCommand("Selection rewritten.", () => service.rewriteSelection(editor));
     },
   });
 
   plugin.addCommand({
-    id: "vault-loom-summarize-current-note",
-    name: "Vault Loom: Summarize Current Note",
+    id: "summarize-current-note",
+    name: "Summarize current note",
     editorCallback: (editor) => {
       void runEditingCommand("Summary inserted.", () => service.summarizeCurrentNote(editor));
     },
