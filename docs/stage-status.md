@@ -867,7 +867,7 @@ Reloading the plugin restores completed tool activity in chat history while defa
 
 ## Marketplace Release Preparation
 
-Status: automated preparation completed; manual release pending
+Status: GitHub release published; Obsidian Community Plugins review pending
 
 ### Scope
 
@@ -878,6 +878,7 @@ Status: automated preparation completed; manual release pending
 - Add version alignment and required-asset release checks.
 - Add a tag-driven GitHub Actions workflow that creates a Draft Release.
 - Document the manual smoke test, release, and initial directory submission steps.
+- Publish GitHub Release `1.0.0` and submit the plugin to the Obsidian Community Plugins directory.
 
 ### Verification
 
@@ -888,7 +889,13 @@ npm run verify
 npm run release:check -- 1.0.0
 ```
 
-Manual verification and submission remain tracked in `docs/releasing.md`.
+Manual verification completed for the initial release:
+
+```txt
+npm run deploy:test
+GitHub Release 1.0.0 published with main.js, manifest.json, and styles.css
+Obsidian Community Plugins entry published and automated review is pending
+```
 
 ### Notes
 

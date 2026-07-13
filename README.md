@@ -4,9 +4,6 @@
 
 Weave your vault into useful AI context. Vault Loom combines streaming chat, note-aware retrieval, editing commands, and a confirmation-gated agent mode for Obsidian.
 
-> [!IMPORTANT]
-> This plugin is in pre-release development and is not yet available in the Obsidian Community Plugins directory. The current installation method is manual.
-
 ## Features
 
 - Stream assistant responses and stop an active generation.
@@ -32,7 +29,7 @@ An endpoint may support chat completions without supporting streaming, tool call
 
 ### Community Plugins
 
-Community Plugins installation will be documented after the plugin has been accepted into the Obsidian directory.
+Vault Loom has been submitted to the Obsidian Community Plugins directory and is pending review. After approval, install it from **Settings → Community plugins** inside Obsidian.
 
 ### Manual installation from source
 
@@ -142,7 +139,7 @@ The codebase keeps UI, provider execution, Obsidian adapters, structured context
 
 ## Release status
 
-Vault Loom is not yet listed in the Obsidian Community Plugins directory. Repository metadata, licensing, version compatibility mapping, release validation, and a tag-driven Draft Release workflow are prepared for version 1.0.0. A desktop smoke test, publication of the generated GitHub release, and the initial directory submission remain manual release steps. See the [release guide](docs/releasing.md).
+Vault Loom `1.0.0` has been released on GitHub and submitted to the Obsidian Community Plugins directory for review. See the [release guide](docs/releasing.md) for the release process.
 
 ## License
 
