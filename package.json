@@ -1,6 +1,6 @@
 {
   "name": "vault-loom",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "AI assistant for context-aware chat, retrieval, and confirmed note actions in Obsidian.",
   "main": "main.js",
   "scripts": {
