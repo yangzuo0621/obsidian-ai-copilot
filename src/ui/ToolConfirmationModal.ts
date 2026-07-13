@@ -30,15 +30,15 @@ class ToolConfirmationModal extends Modal {
     this.titleEl.setText(this.request.title);
     this.contentEl.createEl("p", { text: this.request.description });
     this.contentEl.createEl("p", {
-      cls: "obsidian-ai-copilot-confirm-warning",
+      cls: "vault-loom-confirm-warning",
       text: "This tool will modify your vault. Review the proposed content before approving.",
     });
     this.contentEl.createEl("pre", {
-      cls: "obsidian-ai-copilot-confirm-preview",
+      cls: "vault-loom-confirm-preview",
       text: this.request.preview || "(empty content)",
     });
 
-    const actions = this.contentEl.createDiv({ cls: "obsidian-ai-copilot-confirm-actions" });
+    const actions = this.contentEl.createDiv({ cls: "vault-loom-confirm-actions" });
     const cancelButton = actions.createEl("button", { text: "Cancel" });
     const approveButton = actions.createEl("button", { cls: "mod-cta", text: "Approve" });
     cancelButton.addEventListener("click", () => this.finish(false));

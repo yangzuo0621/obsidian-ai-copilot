@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yangzuo0621/obsidian-ai-copilot.git"
+    "url": "git+https://github.com/yangzuo0621/vault-loom.git"
   },
   "bugs": {
-    "url": "https://github.com/yangzuo0621/obsidian-ai-copilot/issues"
+    "url": "https://github.com/yangzuo0621/vault-loom/issues"
   },
-  "homepage": "https://github.com/yangzuo0621/obsidian-ai-copilot#readme",
+  "homepage": "https://github.com/yangzuo0621/vault-loom#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.0",

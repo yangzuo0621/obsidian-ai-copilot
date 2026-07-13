@@ -1,26 +1,26 @@
-.obsidian-ai-copilot-view {
+.vault-loom-view {
   height: 100%;
 }
 
-.obsidian-ai-copilot-root {
+.vault-loom-root {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
 }
 
-.obsidian-ai-copilot-header {
+.vault-loom-header {
   border-bottom: 1px solid var(--background-modifier-border);
   padding: 12px;
 }
 
-.obsidian-ai-copilot-heading {
+.vault-loom-heading {
   color: var(--text-normal);
   font-size: var(--font-ui-medium);
   font-weight: var(--font-semibold);
 }
 
-.obsidian-ai-copilot-session-title {
+.vault-loom-session-title {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   margin-top: 4px;
@@ -29,40 +29,40 @@
   white-space: nowrap;
 }
 
-.obsidian-ai-copilot-session-controls {
+.vault-loom-session-controls {
   align-items: center;
   display: flex;
   gap: 6px;
   margin-top: 8px;
 }
 
-.obsidian-ai-copilot-session-select {
+.vault-loom-session-select {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.obsidian-ai-copilot-session-new,
-.obsidian-ai-copilot-session-delete,
-.obsidian-ai-copilot-mode-select {
+.vault-loom-session-new,
+.vault-loom-session-delete,
+.vault-loom-mode-select {
   flex: 0 0 auto;
 }
 
-.obsidian-ai-copilot-context-preview {
+.vault-loom-context-preview {
   border-bottom: 1px solid var(--background-modifier-border);
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   padding: 8px 12px;
 }
 
-.obsidian-ai-copilot-context-empty {
+.vault-loom-context-empty {
   line-height: 1.4;
 }
 
-.obsidian-ai-copilot-context-details {
+.vault-loom-context-details {
   line-height: 1.4;
 }
 
-.obsidian-ai-copilot-context-summary {
+.vault-loom-context-summary {
   align-items: center;
   color: var(--text-faint);
   cursor: pointer;
@@ -72,28 +72,28 @@
   text-transform: uppercase;
 }
 
-.obsidian-ai-copilot-context-summary-hint {
+.vault-loom-context-summary-hint {
   color: var(--text-accent);
   font-size: var(--font-ui-smaller);
   margin-left: 8px;
   text-transform: none;
 }
 
-.obsidian-ai-copilot-context-list {
+.vault-loom-context-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 6px;
 }
 
-.obsidian-ai-copilot-context-block {
+.vault-loom-context-block {
   align-items: center;
   display: flex;
   gap: 6px;
   min-width: 0;
 }
 
-.obsidian-ai-copilot-context-type {
+.vault-loom-context-type {
   background: var(--background-modifier-border);
   border-radius: 6px;
   color: var(--text-normal);
@@ -101,24 +101,24 @@
   padding: 2px 6px;
 }
 
-.obsidian-ai-copilot-context-title {
+.vault-loom-context-title {
   flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.obsidian-ai-copilot-context-lines {
+.vault-loom-context-lines {
   color: var(--text-accent);
   flex: 0 0 auto;
 }
 
-.obsidian-ai-copilot-context-tokens {
+.vault-loom-context-tokens {
   color: var(--text-faint);
   flex: 0 0 auto;
 }
 
-.obsidian-ai-copilot-messages {
+.vault-loom-messages {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -128,7 +128,7 @@
   padding: 12px;
 }
 
-.obsidian-ai-copilot-empty {
+.vault-loom-empty {
   align-items: center;
   color: var(--text-muted);
   display: flex;
@@ -139,21 +139,21 @@
   text-align: center;
 }
 
-.obsidian-ai-copilot-message {
+.vault-loom-message {
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   padding: 10px;
 }
 
-.obsidian-ai-copilot-message-user {
+.vault-loom-message-user {
   background: var(--background-primary-alt);
 }
 
-.obsidian-ai-copilot-message-assistant {
+.vault-loom-message-assistant {
   background: var(--background-secondary);
 }
 
-.obsidian-ai-copilot-message-meta {
+.vault-loom-message-meta {
   align-items: center;
   color: var(--text-muted);
   display: flex;
@@ -163,22 +163,22 @@
   margin-bottom: 6px;
 }
 
-.obsidian-ai-copilot-status {
+.vault-loom-status {
   color: var(--text-accent);
 }
 
-.obsidian-ai-copilot-status-error {
+.vault-loom-status-error {
   color: var(--text-error);
 }
 
-.obsidian-ai-copilot-message-content {
+.vault-loom-message-content {
   color: var(--text-normal);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.obsidian-ai-copilot-message-error {
+.vault-loom-message-error {
   color: var(--text-error);
   font-size: var(--font-ui-smaller);
   line-height: 1.4;
@@ -186,45 +186,45 @@
   overflow-wrap: anywhere;
 }
 
-.obsidian-ai-copilot-tool-list {
+.vault-loom-tool-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 10px;
 }
 
-.obsidian-ai-copilot-tool-activity {
+.vault-loom-tool-activity {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   font-size: var(--font-ui-smaller);
   padding: 6px 8px;
 }
 
-.obsidian-ai-copilot-tool-activity summary {
+.vault-loom-tool-activity summary {
   cursor: pointer;
 }
 
-.obsidian-ai-copilot-tool-name {
+.vault-loom-tool-name {
   color: var(--text-normal);
   font-family: var(--font-monospace);
   margin-right: 8px;
 }
 
-.obsidian-ai-copilot-tool-status {
+.vault-loom-tool-status {
   color: var(--text-muted);
 }
 
-.obsidian-ai-copilot-tool-status-succeeded {
+.vault-loom-tool-status-succeeded {
   color: var(--text-success);
 }
 
-.obsidian-ai-copilot-tool-status-declined,
-.obsidian-ai-copilot-tool-status-error {
+.vault-loom-tool-status-declined,
+.vault-loom-tool-status-error {
   color: var(--text-error);
 }
 
-.obsidian-ai-copilot-tool-data,
-.obsidian-ai-copilot-confirm-preview {
+.vault-loom-tool-data,
+.vault-loom-confirm-preview {
   background: var(--background-primary-alt);
   max-height: 240px;
   overflow: auto;
@@ -232,18 +232,18 @@
   white-space: pre-wrap;
 }
 
-.obsidian-ai-copilot-confirm-warning {
+.vault-loom-confirm-warning {
   color: var(--text-warning);
 }
 
-.obsidian-ai-copilot-confirm-actions {
+.vault-loom-confirm-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
   margin-top: 12px;
 }
 
-.obsidian-ai-copilot-composer {
+.vault-loom-composer {
   border-top: 1px solid var(--background-modifier-border);
   display: flex;
   flex-direction: column;
@@ -251,20 +251,20 @@
   padding: 12px;
 }
 
-.obsidian-ai-copilot-input {
+.vault-loom-input {
   min-height: 72px;
   resize: vertical;
   width: 100%;
 }
 
-.obsidian-ai-copilot-send {
+.vault-loom-send {
   align-self: flex-end;
 }
 
-.obsidian-ai-copilot-stop {
+.vault-loom-stop {
   align-self: flex-end;
 }
 
-.obsidian-ai-copilot-stop.is-hidden {
+.vault-loom-stop.is-hidden {
   display: none;
 }
