@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_SETTINGS } from "../settings/defaults";
 
 import { OpenAICompatibleProvider } from "./OpenAICompatibleProvider";
 import { createProvider } from "./ProviderFactory";
+
+vi.mock("obsidian", () => ({
+  requestUrl: vi.fn(),
+}));
 
 describe("ProviderFactory", () => {
   it("creates the configured OpenAI-compatible provider", () => {

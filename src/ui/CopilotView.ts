@@ -404,7 +404,7 @@ export class CopilotView extends ItemView {
     };
 
     for (const delay of [0, 50, 150, 300]) {
-      setTimeout(focus, delay);
+      window.setTimeout(focus, delay);
     }
   }
 }

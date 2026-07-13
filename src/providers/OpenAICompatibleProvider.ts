@@ -7,6 +7,9 @@ import type {
   StreamResult,
   ToolCall,
 } from "./types";
+import { requestUrl } from "obsidian";
+import type { RequestUrlResponse } from "obsidian";
+
 import { formatHttpErrorBody, parseHttpResponseBody } from "./http";
 
 interface OpenAICompatibleProviderOptions {
@@ -57,9 +60,12 @@ export class OpenAICompatibleProvider implements LLMProvider {
   async complete(request: CompletionRequest): Promise<CompletionResult> {
     validateRequest(this.baseUrl, request);
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+    const response = await requestUrl({
+      url: `${this.baseUrl}/chat/completions`,
       method: "POST",
+      contentType: "application/json",
       headers: this.buildHeaders(),
+      throw: false,
       body: JSON.stringify({
         model: request.model,
         messages: serializeMessages(request.messages),
@@ -71,7 +77,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     const responseBody = await parseHttpResponseBody(response);
 
-    if (!response.ok) {
+    if (!isOkStatus(response.status)) {
       throw new Error(`Provider request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 
@@ -89,11 +95,14 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
   async stream(request: CompletionRequest, callbacks: StreamCallbacks, signal?: AbortSignal): Promise<StreamResult> {
     validateRequest(this.baseUrl, request);
+    throwIfAborted(signal);
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+    const response = await requestUrl({
+      url: `${this.baseUrl}/chat/completions`,
       method: "POST",
+      contentType: "application/json",
       headers: this.buildHeaders(),
-      signal,
+      throw: false,
       body: JSON.stringify({
         model: request.model,
         messages: serializeMessages(request.messages),
@@ -103,18 +112,16 @@ export class OpenAICompatibleProvider implements LLMProvider {
         stream: true,
       }),
     });
+    throwIfAborted(signal);
 
-    if (!response.ok) {
+    if (!isOkStatus(response.status)) {
       const responseBody = await parseHttpResponseBody(response);
       throw new Error(`Provider request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 
-    if (!response.body) {
-      throw new Error("Provider streaming response did not include a readable body.");
-    }
-
     const accumulator = new StreamAccumulator();
-    await readServerSentEvents(response.body, (payload) => {
+    readServerSentEventText(response.text, (payload) => {
+      throwIfAborted(signal);
       if (payload === "[DONE]") {
         return;
       }
@@ -141,6 +148,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
   }
 }
 
+function isOkStatus(status: RequestUrlResponse["status"]): boolean {
+  return status >= 200 && status < 300;
+}
+
 function validateRequest(baseUrl: string, request: CompletionRequest): void {
   if (!baseUrl) {
     throw new Error("Provider base URL is required.");
@@ -151,34 +162,9 @@ function validateRequest(baseUrl: string, request: CompletionRequest): void {
   }
 }
 
-async function readServerSentEvents(
-  body: ReadableStream<Uint8Array>,
-  onData: (payload: string) => void,
-): Promise<void> {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split(/\r?\n/);
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      processServerSentEventLine(line, onData);
-    }
-  }
-
-  buffer += decoder.decode();
-  if (buffer) {
-    for (const line of buffer.split(/\r?\n/)) {
-      processServerSentEventLine(line, onData);
-    }
+function readServerSentEventText(text: string, onData: (payload: string) => void): void {
+  for (const line of text.split(/\r?\n/)) {
+    processServerSentEventLine(line, onData);
   }
 }
 
@@ -318,4 +304,12 @@ function serializeToolCall(call: ToolCall): Record<string, unknown> {
     },
     ...(call.extra_content ? { extra_content: call.extra_content } : {}),
   };
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) {
+    return;
+  }
+
+  throw new DOMException("The operation was aborted.", "AbortError");
 }

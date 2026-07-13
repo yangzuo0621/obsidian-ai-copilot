@@ -1,5 +1,8 @@
-export async function parseHttpResponseBody(response: Response): Promise<unknown> {
-  const text = await response.text();
+export interface HttpTextResponse {
+  text: string;
+}
+
+export function parseHttpResponseText(text: string): unknown {
   if (!text) {
     return null;
   }
@@ -9,6 +12,19 @@ export async function parseHttpResponseBody(response: Response): Promise<unknown
   } catch {
     return text;
   }
+}
+
+export async function parseHttpResponseBody(response: Response | HttpTextResponse): Promise<unknown> {
+  if (isHttpTextResponse(response)) {
+    return parseHttpResponseText(response.text);
+  }
+
+  const text = await response.text();
+  return parseHttpResponseText(text);
+}
+
+function isHttpTextResponse(response: Response | HttpTextResponse): response is HttpTextResponse {
+  return typeof response.text === "string";
 }
 
 export function formatHttpErrorBody(responseBody: unknown): string {
