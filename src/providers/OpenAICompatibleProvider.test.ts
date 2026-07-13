@@ -1,23 +1,29 @@
+import { requestUrl } from "obsidian";
+import type { RequestUrlParam, RequestUrlResponse } from "obsidian";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { OpenAICompatibleProvider } from "./OpenAICompatibleProvider";
 
+vi.mock("obsidian", () => ({
+  requestUrl: vi.fn(),
+}));
+
+const requestUrlMock = vi.mocked(requestUrl);
+
 describe("OpenAICompatibleProvider", () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    requestUrlMock.mockReset();
   });
 
   it("sends chat completions requests and extracts assistant content", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
+    requestUrlMock.mockResolvedValue(
+      createResponse(
         JSON.stringify({
           model: "returned-model",
           choices: [{ message: { content: "Hello back" } }],
         }),
-        { status: 200 },
       ),
     );
-    vi.stubGlobal("fetch", fetchMock);
 
     const provider = new OpenAICompatibleProvider({
       apiKey: "secret",
@@ -30,12 +36,15 @@ describe("OpenAICompatibleProvider", () => {
       messages: [{ role: "user", content: "Hello" }],
     });
 
-    expect(fetchMock).toHaveBeenCalledWith("https://example.test/v1/chat/completions", {
+    expect(requestUrlMock).toHaveBeenCalledWith({
+      url: "https://example.test/v1/chat/completions",
       method: "POST",
+      contentType: "application/json",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer secret",
       },
+      throw: false,
       body: JSON.stringify({
         model: "test-model",
         messages: [{ role: "user", content: "Hello" }],
@@ -50,10 +59,7 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("throws a useful error for non-ok responses", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "bad request" }), { status: 400 })),
-    );
+    requestUrlMock.mockResolvedValue(createResponse(JSON.stringify({ error: "bad request" }), 400));
     const provider = new OpenAICompatibleProvider({
       apiKey: "",
       baseUrl: "https://example.test/v1",
@@ -68,19 +74,23 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("streams chat completion tokens from server-sent events", async () => {
-    const body = createStream([
-      'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n',
-      'data: {"choices":[{"delta":{"content":"lo"}}]}\n\n',
-      "data: [DONE]\n\n",
-    ]);
-    const fetchMock = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    requestUrlMock.mockResolvedValue(
+      createResponse(
+        [
+          'data: {"choices":[{"delta":{"content":"Hel"}}]}',
+          "",
+          'data: {"choices":[{"delta":{"content":"lo"}}]}',
+          "",
+          "data: [DONE]",
+          "",
+        ].join("\n"),
+      ),
+    );
     const provider = new OpenAICompatibleProvider({
       apiKey: "secret",
       baseUrl: "https://example.test/v1/",
     });
     const onToken = vi.fn();
-    const abortController = new AbortController();
 
     const result = await provider.stream(
       {
@@ -89,16 +99,18 @@ describe("OpenAICompatibleProvider", () => {
         messages: [{ role: "user", content: "Hello" }],
       },
       { onToken },
-      abortController.signal,
+      new AbortController().signal,
     );
 
-    expect(fetchMock).toHaveBeenCalledWith("https://example.test/v1/chat/completions", {
+    expect(requestUrlMock).toHaveBeenCalledWith({
+      url: "https://example.test/v1/chat/completions",
       method: "POST",
+      contentType: "application/json",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer secret",
       },
-      signal: abortController.signal,
+      throw: false,
       body: JSON.stringify({
         model: "test-model",
         messages: [{ role: "user", content: "Hello" }],
@@ -114,10 +126,7 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("throws useful streaming errors for non-ok responses", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "stream bad request" }), { status: 400 })),
-    );
+    requestUrlMock.mockResolvedValue(createResponse(JSON.stringify({ error: "stream bad request" }), 400));
     const provider = new OpenAICompatibleProvider({
       apiKey: "",
       baseUrl: "https://example.test/v1",
@@ -135,13 +144,20 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("reconstructs streamed tool calls by index", async () => {
-    const body = createStream([
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","function":{"name":"read_","arguments":""}}]}}]}\n\n',
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note"}}]}}]}\n\n',
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":".md\\"}"}}]},"finish_reason":"tool_calls"}]}\n\n',
-      "data: [DONE]\n\n",
-    ]);
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 200 })));
+    requestUrlMock.mockResolvedValue(
+      createResponse(
+        [
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","function":{"name":"read_","arguments":""}}]}}]}',
+          "",
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note"}}]}}]}',
+          "",
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":".md\\"}"}}]},"finish_reason":"tool_calls"}]}',
+          "",
+          "data: [DONE]",
+          "",
+        ].join("\n"),
+      ),
+    );
     const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
 
     const result = await provider.stream(
@@ -172,12 +188,18 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("preserves provider-specific streamed tool call metadata", async () => {
-    const body = createStream([
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","ignored_provider_field":"drop-me","extra_content":{"google":{"thought_signature":"gemini-signature"}},"function":{"name":"read_","arguments":""}}]}}]}\n\n',
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note.md\\"}"}}]},"finish_reason":"tool_calls"}]}\n\n',
-      "data: [DONE]\n\n",
-    ]);
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { status: 200 })));
+    requestUrlMock.mockResolvedValue(
+      createResponse(
+        [
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","ignored_provider_field":"drop-me","extra_content":{"google":{"thought_signature":"gemini-signature"}},"function":{"name":"read_","arguments":""}}]}}]}',
+          "",
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"note","arguments":"{\\"path\\":\\"note.md\\"}"}}]},"finish_reason":"tool_calls"}]}',
+          "",
+          "data: [DONE]",
+          "",
+        ].join("\n"),
+      ),
+    );
     const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
 
     const result = await provider.stream(
@@ -212,12 +234,11 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("serializes assistant tool call metadata for provider continuation", async () => {
-    const body = createStream([
-      'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}\n\n',
-      "data: [DONE]\n\n",
-    ]);
-    const fetchMock = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    requestUrlMock.mockResolvedValue(
+      createResponse(
+        ['data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}', "", "data: [DONE]", ""].join("\n"),
+      ),
+    );
     const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
 
     await provider.stream(
@@ -248,7 +269,7 @@ describe("OpenAICompatibleProvider", () => {
       { onToken: vi.fn() },
     );
 
-    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    const requestBody = JSON.parse(String(getFirstRequestParam().body));
     expect(requestBody.messages[0].tool_calls).toEqual([
       {
         id: "call-1",
@@ -267,12 +288,11 @@ describe("OpenAICompatibleProvider", () => {
   });
 
   it("does not serialize arbitrary provider-specific tool call metadata", async () => {
-    const body = createStream([
-      'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}\n\n',
-      "data: [DONE]\n\n",
-    ]);
-    const fetchMock = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    requestUrlMock.mockResolvedValue(
+      createResponse(
+        ['data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}', "", "data: [DONE]", ""].join("\n"),
+      ),
+    );
     const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
 
     await provider.stream(
@@ -300,7 +320,7 @@ describe("OpenAICompatibleProvider", () => {
       { onToken: vi.fn() },
     );
 
-    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    const requestBody = JSON.parse(String(getFirstRequestParam().body));
     expect(requestBody.messages[0].tool_calls).toEqual([
       {
         id: "call-1",
@@ -313,9 +333,7 @@ describe("OpenAICompatibleProvider", () => {
     ]);
   });
 
-  it("validates required request configuration before fetch", async () => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
+  it("validates required request configuration before request", async () => {
     const provider = new OpenAICompatibleProvider({
       apiKey: "",
       baseUrl: "",
@@ -324,20 +342,48 @@ describe("OpenAICompatibleProvider", () => {
     await expect(provider.complete({ model: "test-model", messages: [] })).rejects.toThrow(
       "Provider base URL is required.",
     );
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(requestUrlMock).not.toHaveBeenCalled();
+  });
+
+  it("does not process streamed text when the signal is already aborted", async () => {
+    const provider = new OpenAICompatibleProvider({ apiKey: "", baseUrl: "https://example.test/v1" });
+    const abortController = new AbortController();
+    abortController.abort();
+
+    await expect(
+      provider.stream({ model: "test-model", messages: [] }, { onToken: vi.fn() }, abortController.signal),
+    ).rejects.toThrow("The operation was aborted.");
+    expect(requestUrlMock).not.toHaveBeenCalled();
   });
 });
 
-function createStream(chunks: string[]): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder();
+function createResponse(text: string, status = 200): RequestUrlResponse {
+  return {
+    status,
+    headers: {},
+    arrayBuffer: new TextEncoder().encode(text).buffer,
+    json: tryParseJson(text),
+    text,
+  };
+}
 
-  return new ReadableStream({
-    start(controller) {
-      for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk));
-      }
+function getFirstRequestParam(): RequestUrlParam {
+  const [request] = requestUrlMock.mock.calls[0] ?? [];
+  if (typeof request !== "object" || request === null) {
+    throw new Error("Expected requestUrl to be called with request params.");
+  }
 
-      controller.close();
-    },
-  });
+  return request;
+}
+
+function tryParseJson(text: string): unknown {
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
 }

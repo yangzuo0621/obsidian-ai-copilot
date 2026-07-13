@@ -1,3 +1,5 @@
+import { requestUrl } from "obsidian";
+
 import { formatHttpErrorBody, parseHttpResponseBody } from "../providers/http";
 
 export interface EmbeddingProvider {
@@ -41,9 +43,12 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
   async embedMany(inputs: string[]): Promise<number[][]> {
     validateEmbeddingRequest(this.baseUrl, this.model, inputs);
 
-    const response = await fetch(`${this.baseUrl}/embeddings`, {
+    const response = await requestUrl({
+      url: `${this.baseUrl}/embeddings`,
       method: "POST",
+      contentType: "application/json",
       headers: this.buildHeaders(),
+      throw: false,
       body: JSON.stringify({
         model: this.model,
         input: inputs,
@@ -51,7 +56,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     });
 
     const responseBody = await parseHttpResponseBody(response);
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Embedding request failed with HTTP ${response.status}: ${formatHttpErrorBody(responseBody)}`);
     }
 

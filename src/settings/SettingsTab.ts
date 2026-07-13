@@ -11,7 +11,7 @@ export class CopilotSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Vault Loom" });
+    new Setting(containerEl).setName("Vault Loom").setHeading();
 
     new Setting(containerEl)
       .setName("API key")
@@ -75,7 +75,6 @@ export class CopilotSettingsTab extends PluginSettingTab {
         slider
           .setLimits(0, 2, 0.1)
           .setValue(this.plugin.copilotSettings.temperature)
-          .setDynamicTooltip()
           .onChange(async (value) => {
             this.plugin.copilotSettings.temperature = value;
             await this.plugin.saveSettings();

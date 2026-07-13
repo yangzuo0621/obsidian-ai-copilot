@@ -56,7 +56,7 @@ export class WorkspaceAdapter {
       });
     }
 
-    this.app.workspace.revealLeaf(leaf);
+    void this.app.workspace.revealLeaf(leaf);
   }
 
   private getMostRecentMarkdownView(): MarkdownView | null {

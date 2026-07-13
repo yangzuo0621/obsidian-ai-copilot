@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import builtins from "builtin-modules";
+import { builtinModules } from "node:module";
 
 const production = process.argv[2] === "production";
 
@@ -20,7 +20,7 @@ const context = await esbuild.context({
     "@codemirror/search",
     "@codemirror/state",
     "@codemirror/view",
-    ...builtins,
+    ...builtinModules,
   ],
   format: "cjs",
   logLevel: "info",
